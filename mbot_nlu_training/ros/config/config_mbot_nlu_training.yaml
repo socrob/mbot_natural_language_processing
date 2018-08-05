@@ -1,0 +1,84 @@
+#======================================================================================
+# configuration file for NLU data generation, training and test parameters
+#======================================================================================
+#===================
+# nlu test params
+#===================
+test_params:
+  # list of available intents, add to list if your training data has more intents.
+  available_intents: ['answer', 'find', 'follow', 'guide', 'take', 'tell', 'go', 'meet']
+  test_choice: 'both'                                                # which test to be executed, available options=['intent', 'slot', 'both']
+  base_path: '../../../mbot_nlu_training/common/resources/wikipedia_vectors/'             # dic and wv path
+  classifier_path:                                                   # classifier paths
+    intent: '../../../mbot_nlu_classifiers/common/classifiers/mithun_gpsr_robocup/intent'
+    slot: '../../../mbot_nlu_classifiers/common/classifiers/mithun_gpsr_robocup/slots'
+  pwd: './'                                                          # pwd
+  debug: False                                                       # test debug
+#======================================================================================
+# training and data generation params
+#======================================================================================
+#===================
+# intent
+#===================
+intent_train:
+  # list of available intents, add to list if your training data has more intents.
+  available_intents: ['answer', 'find', 'follow', 'guide', 'take', 'tell', 'go', 'meet']
+  n_examples: &n_examples_i 200000    # total n of samples for training and vaidation
+  number_of_batches: 10               # total n of data batches
+  number_of_validation_batches: 5     # n of batches used for validation
+  forget_bias: 1.0                    # forget bias for lstm cell
+  learning_rate: 0.001                # initial learning rate for adam optimizer
+  data_slider: 0                      # control the distribution of simple and complext sentences.
+                                      # if value increased repeatation of simple sentences and unique number of complex sentences increases
+  n_lstm_layers: 2                    # n lstm layers
+  resample_random_state: None         # dataset resample random state
+  resample_replace: False             # to use or not use data duplication while shuffling after each epoch
+  n_epochs: 500                       # n epochs
+  n_steps: 15                         # max n of words in the sentences
+  rnn_size: 500                       # n of lstm cells in each layer
+  batch_size: 1                       # n samples used for optimization in each cycle
+  embedding_size: 300                 # embedding size of wordvectors
+  loss_lower_limit: !!float 1e-5      # to stop the training when the loss is below this value
+  use_tensorboard: False              # to use TB or not
+  debug: False                        # debug, will give lot of info about the execution if True
+  base_path: '../../../../resources/wikipedia_vectors/'  # path to dictionary and wordvector files
+  available_gpu_index: '1'            # which gpu to use. if total 4 gpus available, possible numbers are 0,1,2,3. can be multiple(eg: 1,2)
+#===================
+# slots
+#===================
+slots_train:
+  # list of available slots, add to list if your training data has more slots.
+  available_slots: ['Bobject', 'Iobject', 'Bsource', 'Isource', 'Bdestination', 'Idestination', 'Bperson', 'Bwhat_to_tell', 'Iwhat_to_tell', 'O']
+  n_examples: &n_examples_s 200000                  # number of samples for training
+  old_method:                                       # parameters for old method(feed_dict+placeholder)
+    batch_size: 1                                   # n samples used for optimization in each cycle
+    number_of_batches: 10                           # total n of data batches
+    number_of_validation_batches: 5                 # n of batches used for validation
+  forget_bias: 1.0                                  # forget bias parameter for lstm cell
+  learning_rate: 0.001                              # initial learning rate for adam optimizer
+  data_slider: 0                                    # control the distribution of simple and complext sentences.
+                                                    # if value increased repeatation of simple sentences and unique number of complex sentences increases
+  n_lstm_layers: 2                                  # n lstm layers
+  resample_replace: False                           # to use or not use data duplication while shuffling after each epoch
+  resample_random_state: None                       # dataset resample random state
+  n_epochs: &n_epochs 500                           # n of epochs
+  n_steps: 15                                       # max n of words in the sentences
+  rnn_size: 500                                     # n of lstm cells in each layer
+  embedding_size: 300                               # embedding size of wordvectors
+  loss_lower_limit: !!float 1e-5                    # to stop the training when the loss is below this value
+  use_tensorboard: False                            # to use TB or not
+  debug: False                                      # debug, will give lot of info about the execution if True
+  base_path: '../../../../resources/wikipedia_vectors/'   # path to dictionary and wordvector files
+  n_parallel_iterations_bi_rnn: 32                  # Bi dinamic rnn parameter. The number of iterations to run in parallel...
+                                                    # Those operations which do not have any temporal dependency and can be run in parallel...
+                                                    # will be. This parameter trades off time for space. default=32
+  available_gpu_index: '0'                          # which gpu to use. if total 4 gpus available, possible numbers are 0,1,2,3. can be multiple(eg: 1,2)
+  train_method: 'old'                               # key to activate old and the new method,
+                                                    # old: using tf placeholder with feed_dict, new: tf data iteration.
+                                                    # the old method will be removed in the future updates
+  new_method:                                       # parameters for new method(tf.data)
+    batch_size: &batch_size 1                       # n samples used for optimization in each cycle
+    q: 0.01                                         # Percentage of sample used for testing after each training session
+    prefetch_buffer: *batch_size                    # prefetching inputs to memory
+    shuffle_buffer: *n_examples_s                   # input data shuffle. Value > n_samples gives uniform shuffle
+    repeat_dataset: *n_epochs                       # repeat the dataset n number of times

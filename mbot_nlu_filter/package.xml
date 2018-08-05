@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+ <name>mbot_nlu_filter</name>
+ <version>1.0.0</version>
+ <description>
+ Filter for bad commands, do confirmations, etc
+ </description>
+
+ <license>GPLv3</license>
+
+ <author email="mbot05@mbot.com">mbot05 robot</author>
+ <maintainer email="mbot05@mbot.com">mbot05 robot</maintainer>
+
+ <buildtool_depend>catkin</buildtool_depend>
+
+ <build_depend>
+ </build_depend>
+
+ <run_depend>
+ </run_depend>
+
+</package>

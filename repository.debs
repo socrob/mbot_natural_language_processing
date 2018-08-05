@@ -1,0 +1,37 @@
+#!/bin/bash
+if [ $# == 0 ]; then
+    INSTALL_PACKAGES=true
+else
+    INSTALL_PACKAGES=$1
+fi
+
+# your ROS distribution
+DISTRO=kinetic
+
+# dir path of this file
+DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# install natural language understanding dependencies
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+echo -e "${YELLOW}\nStarting nlu setup...\n${NC}"
+bash ${DIR}/mbot_nlu/common/setup/nlu_setup.sh
+echo -e "${YELLOW}\nStarting nlu training setup...\n${NC}"
+bash ${DIR}/mbot_nlu_training/common/setup/nlu_training_setup.sh
+echo -e "${YELLOW}\nStarting nlu classifier setup...\n${NC}"
+echo -e "${YELLOW}Downloading mithun_gpsr_robocup classifier...${NC}" && sleep 2 && bash ${DIR}/mbot_nlu_classifiers/common/setup/download_classifiers.sh 3
+
+### install further repositories if repository.rosinstall file exists
+if [ -f repository.rosinstall ]; then
+    rosinstall .. /opt/ros/${DISTRO} repository.rosinstall
+
+    ### install dependencies of the previously cloned repositories
+    dependent_repositories=$(grep -r "local-name:" repository.rosinstall  | cut -d":" -f 2 | sed -r 's/\s+//g')
+    for i in $dependent_repositories
+    do
+        cd ../$i
+        if [ -f repository.debs ]; then ./repository.debs $INSTALL_PACKAGES ; fi
+    done
+fi
+
+printf "\n\n"

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+
+  <name>mbot_nlu_classifiers</name>
+  <version>1.0.0</version>
+  <description>
+    This package is ROS independent.
+    Stores the result of having trained a Neural Network with tensfor flow
+    comming from pkg mbot_nlu_training
+  </description>
+
+  <license>GPLv3</license>
+
+  <author email="pedrohenriqueamartins@ist.utl.pt">Pedro Henrique Alves Martins</author>
+
+  <maintainer email="olima@isr.tecnico.ulisboa.pt">Oscar Lima</maintainer>
+  <maintainer email="mkinaruthil@tecnico.ulisboa.pt">Mithun K Balussery</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>

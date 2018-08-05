@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- mbot NLU unit tests -->
+
+  <!-- launch mbot NLU required components -->
+  <include file="$(find mbot_nlu)/ros/launch/mbot_nlu.launch" />
+
+  <!-- run mbot NLU unit test -->
+  <test pkg="mbot_nlu" type="mbot_nlu_test.py" test-name="test_mbot_nlu" />
+
+</launch>

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>mbot_nlu</name>
+  <version>1.0.0</version>
+  <description>
+    mbot natural language understanding
+    inputs text and outputs intention (action) and slot (arguments)
+
+    e.g. robot please go to the kitchen - action: go, arg: kitchen
+         robot can you go to the kitchen please? - action:go, arg: kitchen
+  </description>
+
+  <license>GPLv3</license>
+
+  <author email="pedrohenriqueamartins@ist.utl.pt">Pedro Martins</author>
+  <maintainer email="olima@isr.tecnico.ulisboa.pt">Oscar Lima</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>message_generation</run_depend>
+
+</package>
