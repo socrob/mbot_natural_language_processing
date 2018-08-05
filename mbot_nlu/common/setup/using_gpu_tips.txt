@@ -1,0 +1,104 @@
+See the following comment: https://github.com/tensorflow/models/issues/248#issuecomment-288991859
+
+Pasting here in case it is removed for some reason:
+
+--------------------------------------------------
+
+
+Following is the summary of what worked for me. It is based on prev comments and other sources.
+
+    Install all the dependencies for syntaxnet
+
+    Choose non NFS location for bazel temp directory related files. I choose '/tmp/bazeltemp'. Add this line to .bashrc:
+    export TEST_TMPDIR=/tmp/bazeltemp
+
+    Install bazel using installer (I choose 0.4.5). Here, bin and bazelrc can be in NFS location
+    $ chmod +x bazel-version-installer-os.sh
+    $ ./bazel-version-installer-os.sh --bin=$HOME/bin --base=/tmp/bazeltemp/base --bazelrc=$HOME/.bazelrc
+
+    Make following edit in configure file of tensorflow: models/syntaxnet/tensorflow/configure
+    Replace bazel clean --expunge with bazel clean --expunge_async
+
+    $ ./configure
+    Experiment with different options if you like to
+
+Please specify the location of python. [Default is /home/anaconda2/bin/python]:
+Please specify optimization flags to use during compilation when bazel option "--config=opt" is specified [Default is -march=native]:
+Do you wish to use jemalloc as the malloc implementation? [Y/n] y
+jemalloc enabled
+Do you wish to build TensorFlow with Google Cloud Platform support? [y/N] n
+No Google Cloud Platform support will be enabled for TensorFlow
+Do you wish to build TensorFlow with Hadoop File System support? [y/N] y
+Hadoop File System support will be enabled for TensorFlow
+Do you wish to build TensorFlow with the XLA just-in-time compiler (experimental)? [y/N] n
+No XLA JIT support will be enabled for TensorFlow
+Found possible Python library paths:
+/home/anaconda2/lib/python2.7/site-packages
+Please input the desired Python library path to use. Default is [/home/anaconda2/lib/python2.7/site-packages]
+
+Using python library path: /home/anaconda2/lib/python2.7/site-packages
+Do you wish to build TensorFlow with OpenCL support? [y/N] n
+No OpenCL support will be enabled for TensorFlow
+Do you wish to build TensorFlow with CUDA support? [y/N] y
+CUDA support will be enabled for TensorFlow
+Please specify which gcc should be used by nvcc as the host compiler. [Default is /usr/bin/gcc]:
+Please specify the CUDA SDK version you want to use, e.g. 7.0. [Leave empty to use system default]: 8.0
+Please specify the Cudnn version you want to use. [Leave empty to use system default]: 5.1
+Please specify the location where cuDNN 5.1 library is installed. Refer to README.md for more details. [Default is /opt/software/cuda/cuda-8.0]:
+Please specify a list of comma-separated Cuda compute capabilities you want to build with.
+You can find the compute capability of your device at: https://developer.nvidia.com/cuda-gpus.
+Please note that each additional compute capability significantly increases your build time and binary size.
+[Default is: "3.5,5.2"]
+
+    Follow the instructions below:
+    a. Make sure you have the following environment variables set in .bashrc
+
+    CUDA_HOME="[path_to_cuda_top_directory]"
+    LD_LIBRARY_PATH="[path_to_cuda_lib64_directory] :$LD_LIBRARY_PATH"
+    PATH="[path_to_cuda_bin_directory]:$PATH"
+
+    For example my .basrhc has following
+
+     export ORACLE_HOME=/opt/software/oracle/product/12.1.0/client
+     export PATH=${PATH}:${ORACLE_HOME}/bin
+     export PATH=/home/IAIS/uadhikari/anaconda2/bin:$PATH
+
+     export CUDA_HOME=/opt/software/cuda/cuda-8.0
+     export CUDA_TOOLKIT_PATH=${CUDA_HOME}
+     export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64:$LD_LIBRARY_PATH
+     export PATH=${CUDA_HOME}/bin:${PATH}
+
+     export JAVA_HOME=/opt/software/jdk1.8.0_51
+     export PATH=/tmp/bazeltemp/bin:$PATH
+     export CUDNN_HOME=${CUDA_HOME}
+     export TEST_TMPDIR=/tmp/bazeltemp
+
+b. Add the line `build --config=cuda to tools/bazel.rc` (I added as first line in the file)
+
+c. In the file tensorflow/third_party/gpus/crosstool/CROSSTOOL,
+replace every `cxx_builtin_include_directory: "%{cuda_include_path}"`
+with `cxx_builtin_include_directory: "your/cuda/home/path/include"`
+
+d. Force Tensorflow to use Cuda by changing the //conditions:default part in syntaxnet/syntaxnet.bzl from `if_false` to `if_true`.
+
+e. Do the same thing for tensorflow/third_party/gpus/cuda/build_defs.bzl
+
+    $ bazel clean --expunge_async
+
+    Carefully run each of these
+    $ export TF_NEED_CUDA=1
+    $ export CUDA_TOOLKIT_PATH=$CUDA_HOME
+    $ export TF_CUDA_VERSION=8.0
+    $ export TF_CUDNN_VERSION=5.1
+    $ export CUDNN_INSTALL_PATH=$CUDA_HOME
+
+    This has to be run in in models/syntaxnet folder
+    $ bazel test -c opt --config=cuda --define using_cuda_nvcc=true --define using_gcudacc=true syntaxnet/... util/utf8/...
+    If you get error about cross tool or local_config_cuda, goto step 5 and try again
+
+    If you get error about nccl:
+    comment out the dependency for nccl in: tensorflow/tensorflow/contrib/BUILD as mentioned in
+    tensorflow/serving#327
+    Goto step 5 and try again
+
+I hope this works for you.

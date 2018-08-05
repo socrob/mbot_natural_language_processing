@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+
+  <name>mbot_nlu_training</name>
+  <version>1.0.0</version>
+  <description>
+    This package is ROS independent.
+    Trains a Neural Network (long short therm memory) using tensor flow, to be used
+    in Natural Language Understanding.
+  </description>
+
+  <license>GPLv3</license>
+
+  <author email="pedrohenriqueamartins@ist.utl.pt">Pedro Henrique Alves Martins</author>
+
+  <maintainer email="olima@isr.tecnico.ulisboa.pt">Oscar Lima</maintainer>
+  <maintainer email="mkinaruthil@tecnico.ulisboa.pt">Mithun K Balussery</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>

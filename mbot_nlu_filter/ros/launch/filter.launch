@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="ns" default="hri/nlu"/>
+
+    <!-- topic of speech recognition -->
+    <arg name="speech_topic" default="/recognized_speech"/>
+
+    <!-- NLU input/output topics -->
+    <arg name="nlu_input_topic" default="/$(arg ns)/input_sentence"/>
+    <arg name="nlu_output_topic" default="/$(arg ns)/output_recognition"/>
+
+    <!-- topic to output person names -->
+    <arg name="person_names_topic" default="/$(arg ns)/person_names"/>
+
+    <!-- where the full NLU output will be published -->
+    <arg name="full_response_topic" default="~full_nlu_response"/>
+
+    <!-- optionally don't use syntaxnet, only if you're processing single phrase sentences -->
+    <arg name="use_syntaxnet" default="True" />
+
+    <!-- ask confirmation only if sentence has less or equal than this number of words -->
+    <arg name="confirmation_max_words" default="999" />
+
+    <!-- filter sentence before sending to NLU? and using which regex pattern? -->
+    <arg name="filter_sentence" default="False" />
+    <arg name="filter_sentence_pattern" default=".*(robot|mbot|gasparzinho|please) "/> <!-- will remove 'ok robot', 'hi robot', etc -->
+
+    <!-- NLU Filter -->
+    <node pkg="mbot_nlu_filter" type="mbot_nlu_filter_node" name="nlu_filter"
+          required="true" output="screen">
+
+        <param name="wait_when_talking" type="bool" value="true"/>
+        <param name="use_syntaxnet" type="bool" value="$(arg use_syntaxnet)" />
+        <param name="confirmation_max_words" type="int" value="$(arg confirmation_max_words)" />
+        <param name="filter_sentence" type="bool" value="$(arg filter_sentence)" />
+        <param name="filter_sentence_pattern" type="string" value="$(arg filter_sentence_pattern)" />
+
+        <remap from="~speech_topic" to="$(arg speech_topic)"/>
+        <remap from="~nlu_input_topic" to="$(arg nlu_input_topic)"/>
+        <remap from="~nlu_output_topic" to="$(arg nlu_output_topic)"/>
+        <remap from="~full_response_topic" to="$(arg full_response_topic)"/>
+        <remap from="~person_names_topic" to="$(arg person_names_topic)"/>
+    </node>
+</launch>

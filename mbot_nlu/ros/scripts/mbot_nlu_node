@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import mbot_nlu_ros.mbot_nlu_node
+
+if __name__ == '__main__':
+    mbot_nlu_ros.mbot_nlu_node.main()

@@ -1,0 +1,9 @@
+# downloaded pre-trained files from wikipedia
+glove.*.txt
+
+# automatically generated files from glove
+dictionary
+wordvectors
+big_dictionary
+big_wordvectors
+

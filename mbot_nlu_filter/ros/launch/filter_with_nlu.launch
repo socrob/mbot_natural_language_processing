@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="ns" default="hri/nlu"/>
+
+    <arg name="nlu_classifier" default="mithun_gpsr_robocup"/>
+
+    <!-- topic of speech recognition -->
+    <arg name="speech_topic" default="/recognized_speech"/>
+
+    <!-- NLU input/output topics -->
+    <arg name="nlu_input_topic" default="/$(arg ns)/input_sentence"/>
+    <arg name="nlu_output_topic" default="/$(arg ns)/output_recognition"/>
+
+    <!-- where the full NLU output will be published -->
+    <arg name="full_response_topic" default="~full_nlu_response"/>
+
+    <!-- optionally don't use syntaxnet, only if you're processing single phrase sentences -->
+    <arg name="use_syntaxnet" default="true" />
+
+    <!-- ask confirmation only if sentence has less or equal than this number of words -->
+    <arg name="confirmation_max_words" default="999" />
+
+    <!-- filter sentence before sending to NLU? and using which regex pattern? -->
+    <arg name="filter_sentence" default="False" />
+    <arg name="filter_sentence_pattern" default=".*(robot|mbot|gasparzinho|please) "/> <!-- will remove 'ok robot', 'hi robot', etc -->
+
+    <!-- NLU Filter -->
+    <include file="$(find mbot_nlu_filter)/ros/launch/filter.launch">
+
+        <!-- topic of speech recognition -->
+        <arg name="speech_topic" value="$(arg speech_topic)"/>
+
+        <!-- NLU input/output topics -->
+        <arg name="nlu_input_topic" value="$(arg nlu_input_topic)"/>
+        <arg name="nlu_output_topic" value="$(arg nlu_output_topic)"/>
+
+        <!-- where the full NLU output will be published -->
+        <arg name="full_response_topic" value="$(arg full_response_topic)"/>
+
+        <!-- optionally don't use syntaxnet, only if you're processing single phrase sentences -->
+        <arg name="use_syntaxnet" value="$(arg use_syntaxnet)" />
+
+        <!-- ask confirmation only if sentence has less or equal than this number of words -->
+        <arg name="confirmation_max_words" value="$(arg confirmation_max_words)" />
+
+        <!-- filter sentence before sending to NLU? and using which regex pattern? -->
+        <arg name="filter_sentence" value="$(arg filter_sentence)" />
+        <arg name="filter_sentence_pattern" value="$(arg filter_sentence_pattern)"/> <!-- will remove 'ok robot', 'hi robot', etc -->
+
+    </include>
+
+    <!-- NLU -->
+    <include file="$(find mbot_nlu)/ros/launch/mbot_nlu.launch" >
+        <arg name="nlu_input" value="$(arg nlu_input_topic)"/>
+        <arg name="nlu_output" value="$(arg nlu_output_topic)"/>
+
+        <!-- Never use syntaxnet directly on NLU, only on Filter if requested -->
+        <arg name="use_syntaxnet" value="false"/>
+
+        <arg name="nlu_classifier" value="$(arg nlu_classifier)"/>
+
+    </include>
+</launch>

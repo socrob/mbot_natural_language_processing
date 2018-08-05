@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- NOTE: this is an example launch file, please do not modify! -->
+
+    <!-- NLU : Natural Language understanding -->
+    <arg name="ns" default="hri/nlu"/>
+
+    <!-- select nlu desired classifier here -->
+    <arg name="nlu_classifier" default="mithun_gpsr_robocup"/>
+
+    <!-- the string containing the sentence from which the intention and args will get extracted -->
+    <arg name="nlu_input" default="~input_sentence" />
+
+    <!-- the topic name in which the NLU will publish the output intention and args -->
+    <arg name="nlu_output" default="~output_recognition" />
+
+    <!-- optionally dont use syntaxnet, only if you're processing single phrase sentences -->
+    <arg name="use_syntaxnet" default="False" />
+
+    <!-- mbot natural language understanding, inputs text, outputs intention and arguments -->
+    <node ns="$(arg ns)" pkg="mbot_nlu" type="mbot_nlu_node" name="mbot_nlu" respawn="true" output="screen">
+
+        <remap from="~input_sentence" to="$(arg nlu_input)"/>
+        <remap from="~output_recognition" to="$(arg nlu_output)"/>
+
+        <param name="use_syntaxnet" value="$(arg use_syntaxnet)" />
+        <param name="nlu_classifier" value="$(arg nlu_classifier)" />
+
+    </node>
+
+</launch>
