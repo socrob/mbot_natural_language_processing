@@ -23,10 +23,10 @@ pip3_packagelist=(
 )
 
 # Install python packages listed in array above in python 2
-sudo -H pip install ${pip_packagelist[@]}
+pip install ${pip_packagelist[@]} --user
 
 # Install python packages listed in array above in python 3
-sudo -H pip3 install ${pip3_packagelist[@]}
+pip3 install ${pip3_packagelist[@]} --user
 
 # custom commands
 echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list

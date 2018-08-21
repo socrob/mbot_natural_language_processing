@@ -1,2 +1,8 @@
 # ignore the classifiers
 mbot_nlu_classifiers/common/classifiers/*
+
+# ignore compiled and temp files
+*.pyc
+*~
+*.*.save
+

@@ -21,7 +21,7 @@ pip3_packagelist=(
 sudo apt-get install -y ${debian_packagelist[@]}
 
 # Install python packages listed in array above in python 3
-pip3 install ${pip3_packagelist[@]}
+pip3 install ${pip3_packagelist[@]} --user
 
 # dir path of this file
 DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
