@@ -1,2 +1,154 @@
-go kitchen is a destination
-go bedroom is a destination
+#============================================================
+# GPSR test inputs
+#============================================================
+# go
+go cutlery drawer is a Destination
+go dresser is a Destination
+go fireplace is a Destination
+go kitchen is a Destination
+go kitchen is a Destination
+go kitchen is a Destination
+go kitchen is a Destination
+go kitchen is a Destination
+go kitchen is a Destination
+go kitchen is a Destination
+go kitchen is a Destination
+go bedroom is a Destination
+go bedroom is a Destination
+go bedroom is a Destination
+go kitchen is a Destination
+go bedroom is a Destination
+go fireplace is a Destination
+# take
+take pringles is an Object
+take pasta is an Object
+take pringles is an Object
+take pasta is an Object
+take pasta is an Object
+take pasta is an Object
+take pasta is an Object
+take pasta is an Object
+take pasta is an Object fireplace is a Source
+take pasta is an Object microwave is a Source
+take me is a Person pasta is an Object
+take me is a Person pasta is an Object
+take pasta is an Object fireplace is a Destination
+take pasta is an Object fireplace is a Destination
+take pasta is an Object fireplace is a Destination
+take pasta is an Object peyton is a Person
+take pasta is an Object peyton is a Person
+take pasta is an Object peyton is a Person
+take me is a Person pasta is an Object fireplace is a Source
+take me is a Person pasta is an Object fireplace is a Source
+take pasta is an Object peyton is a Person fireplace is a Destination
+take pasta is an Object me is a Person
+take pasta is an Object me is a Person
+take pasta is an Object me is a Person
+take pasta is an Object peyton is a Person fireplace is a Destination
+take pasta is an Object peyton is a Person fireplace is a Destination
+take peyton is a Person fireplace is a Destination pasta is an Object microwave is a Source
+take peyton is a Person fireplace is a Destination pasta is an Object microwave is a Source
+take pasta is an Object microwave is a Source
+take pasta is an Object fireplace is a Destination
+take pasta is an Object microwave is a Source
+take pasta is an Object microwave is a Source fireplace is a Destination
+take pasta is an Object microwave is a Source fireplace is a Destination
+take pasta is an Object freezer is a Destination
+take pasta is an Object freezer is a Destination
+take pasta is an Object microwave is a Destination
+take pasta is an Object microwave is a Destination
+take pasta is an Object microwave is a Source fireplace is a Destination
+take pasta is an Object microwave is a Source fireplace is a Destination
+take pasta is an Object microwave is a Source fireplace is a Destination
+take pasta is an Object microwave is a Source fireplace is a Destination
+# find
+find paper clip is an Object
+find bag is an Object
+find pasta is an Object
+find pringles is an Object
+find pasta is an Object
+find pasta is an Object
+find pasta is an Object
+find pasta is an Object
+find pasta is an Object bathtub is a Destination
+find pasta is an Object bathtub is a Destination
+find pasta is an Object bathtub is a Destination
+find peyton is a Person
+find peyton is a Person
+find peyton is a Person
+find peyton is a Person bathtub is a Destination
+find peyton is a Person bathtub is a Destination
+find peyton is a Person bathtub is a Destination
+find someone is a Person
+find someone is a Person
+find someone is a Person
+find person is a Person
+find person is a Person
+find person is a Person
+find person is a Person bathtub is a Destination
+find person is a Person bathtub is a Destination
+find person is a Person bathtub is a Destination
+find someone is a Person bathtub is a Destination
+find someone is a Person bathtub is a Destination
+find someone is a Person bathtub is a Destination
+# answer
+answer
+answer peyton is a Person
+answer peyton is a Person fireplace is a Destination
+# tell
+tell a joke is what to tell
+tell what day is today is what to Tell peyton is a Person
+tell what day is today is what to Tell peyton is a Person
+tell what day is today is what to Tell peyton is a Person fireplace is a Destination
+tell what day is today is what to Tell peyton is a Person fireplace is a Destination
+tell something about yourself is what to Tell
+tell something about yourself is what to Tell
+tell me is a Person something about yourself is what to Tell
+tell me is a Person name of the person is what to Tell fireplace is a Destination
+tell me is a Person name of the person is what to Tell bathtub is a Destination
+tell me is a Person how many is what to Tell pasta is an Object cutlery drawer is a Destination
+#============================================================
+# EEGPSR test inputs
+#============================================================
+# go
+go dining room is a Destination
+# take
+take pasta is an Object me is a Person
+take pasta is an Object me is a Person
+take pasta is an Object peyton is a Person fireplace is a Destination
+take pasta is an Object peyton is a Person fireplace is a Destination
+take pasta is an Object fireplace is a Source
+take pasta is an Object cutlery drawer is a Destination
+take pasta is an Object cutlery drawer is a Destination
+take pasta is an Object cutlery drawer is a Destination
+take pasta is an Object cutlery drawer is a Destination
+take pasta is an Object cutlery drawer is a Destination
+take pasta is an Object cutlery drawer is a Destination
+# find
+find pasta is an Object
+find pasta is an Object
+find pasta is an Object bathtub is a Destination
+find pasta is an Object bathtub is a Destination
+find peyton is a Person
+find peyton is a Person
+find peyton is a Person bathtub is a Destination
+find peyton is a Person bathtub is a Destination
+find peyton is a Person fireplace is a Destination
+find peyton is a Person fireplace is a Destination
+find peyton is a Person fireplace is a Destination
+find peyton is a Person fireplace is a Destination
+find peyton is a Person fireplace is a Destination
+# guide
+guide peyton is a Person
+guide peyton is a Person fireplace is a Destination
+guide peyton is a Person fireplace is a Destination
+guide peyton is a Person fireplace is a Destination
+guide peyton is a Person fireplace is a Destination
+guide peyton is a Person fireplace is a Destination
+guide peyton is a Person fireplace is a Destination
+# follow
+follow peyton is a Person
+follow peyton is a Person
+follow peyton is a Person
+follow peyton is a Person
+follow peyton is a Person
