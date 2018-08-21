@@ -26,7 +26,7 @@ cd mbot_natural_language_processing
 ~~~~
 - Install dependencies and finish the setup by invoking the automated script (require admin privilages)  
 ~~~~
-source repository.debs
+sudo ./repository.debs
 ~~~~
 - Build the packages and source the workspace
 ~~~~
