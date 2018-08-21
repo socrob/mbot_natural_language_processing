@@ -26,19 +26,22 @@ cd mbot_natural_language_processing
 ~~~~
 - Install dependencies and finish the setup by invoking the automated script (require admin privilages)  
 ~~~~
-source repository.debs
+sudo ./repository.debs
+(Give No for all the unnecessary prompts)
 ~~~~
 - Build the packages and source the workspace
 ~~~~
-catkin build catkin build mbot_nlu mbot_nlu_classifiers mbot_nlu_filter mbot_nlu_training
+catkin build mbot_nlu mbot_nlu_classifiers mbot_nlu_filter mbot_nlu_training
 source ../../devel/setup.bash
 ~~~~
 
 ## DNN Inference
 
+# Single sentence classification
+
 - Run the launch file
 ~~~~
-rosrlaunch mbot_nlu mbot_nlu.launch nlu_classifier:=mithun_gpsr_robocup
+roslaunch mbot_nlu mbot_nlu.launch nlu_classifier:=mithun_gpsr_robocup
 ~~~~
 - Visualize the intention and arguments
 ~~~~
@@ -46,7 +49,26 @@ rostopic echo /hri/nlu/mbot_nlu/output_recognition
 ~~~~
 - Trigger the node with some text
 ~~~~
-rostopic pub --once /hri/nlu/mbot_nlu/input_sentence std_msgs/String "data: 'go to the kitchen and pick the spoon'"
+rostopic pub --once /hri/nlu/mbot_nlu/input_sentence std_msgs/String "data: 'go to the kitchen'"
+~~~~
+
+# Multi sentence classification
+
+- Run the launch file
+~~~~
+roslaunch mbot_nlu_filter filter_with_nlu.launch nlu_classifier:=mithun_gpsr_robocup
+~~~~
+- Visualize the intention and arguments
+~~~~
+rostopic echo /nlu_filter/full_nlu_response
+~~~~
+- Trigger the node with some text
+~~~~
+rostopic pub --once /recognized_speech std_msgs/String "data: 'go to the kitchen and pick the spoon'"
+~~~~
+- Confirm the recieved text ("_Filtered - asked for confirmation")
+~~~~
+rostopic pub --once /recognized_speech std_msgs/String "data:it is correct'"
 ~~~~
 
 ## DNN training setup
