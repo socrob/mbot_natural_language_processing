@@ -47,7 +47,7 @@ debian_packagelist=(
 sudo apt-get install -y ${debian_packagelist[@]}
 
 # custom commands
-sudo apt-get upgrade bazel
+sudo apt-get install --only-upgrade bazel
 sudo -H pip install pygraphviz --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/"
 
 # clone tensorflow models (SocRob fork) including submodules
