@@ -68,7 +68,7 @@ rostopic pub --once /recognized_speech std_msgs/String "data: 'go to the kitchen
 ~~~~
 - Confirm the recieved text ("_Filtered - asked for confirmation")
 ~~~~
-rostopic pub --once /recognized_speech std_msgs/String "data:it is correct'"
+rostopic pub --once /recognized_speech std_msgs/String "data: 'it is correct'"
 ~~~~
 
 ## DNN training setup
