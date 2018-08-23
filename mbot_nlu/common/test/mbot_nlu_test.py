@@ -6,7 +6,8 @@ import time
 import yaml
 import unittest
 import progressbar
-from nlu_source.mbot_nlu_common import NaturalLanguageUnderstanding
+sys.path.append(os.path.abspath('../'))
+from src.mbot_nlu.mbot_nlu_common import NaturalLanguageUnderstanding
 
 class MbotNluTest(unittest.TestCase):
 
@@ -15,16 +16,18 @@ class MbotNluTest(unittest.TestCase):
         Sets up the test fixture before exercising it
         '''
         # load test parameters from yaml file
-        yaml_dict = yaml.load(open('../../gpsr/nlu_training.yaml'))['test_params']
+        yaml_dict = yaml.load(open('../../../mbot_nlu_training/ros/config/config_mbot_nlu_training.yaml'))['test_params']
         classifier_path = yaml_dict['classifier_path']
         wikipedia_vectors_path = yaml_dict['base_path']
-        available_intents = yaml_dict['available_intents']
         self.pwd = yaml_dict['pwd']
         self.test_choice = yaml_dict['test_choice']
         debug = yaml_dict['debug']
+
         # NLU class and instance
-        self.nlu = NaturalLanguageUnderstanding(available_intents, classifier_path, wikipedia_vectors_path, self.test_choice, debug=debug)
-        self.nlu.intitialize_session()
+        self.nlu = NaturalLanguageUnderstanding(classifier_path, wikipedia_vectors_path, debug=debug)
+
+        # initialize session
+        self.nlu.initialize_session()
         print('nlu session is running')
 
     def tearDown(self):

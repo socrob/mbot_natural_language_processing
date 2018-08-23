@@ -50,6 +50,9 @@ class NaturalLanguageUnderstanding(object):
             # Disable Tensorflow debugging information
             tf.logging.set_verbosity(tf.logging.ERROR)
 
+        # print available intents if debug
+        if debug: print('available intents = {}'.format(self.available_intents))
+
 
     def initialize_session(self):
         '''
@@ -131,7 +134,6 @@ class NaturalLanguageUnderstanding(object):
         method to close both tf sessions (which will release the tf variables from memory) once NLU is no longer needed.
         (use it wisely ;))
         '''
-
         # sanity check
         # closing intent and slot sessions
         if not self.intent_sess._closed: self.intent_sess.close()
@@ -162,7 +164,7 @@ class NaturalLanguageUnderstanding(object):
 
         # print debug information if debug is set to true
         if self.debug:
-            print(y_pred) # probabilites (kind of, not exactly probabilites) for each of the actions
+            print('prediction from the intent classifier = {}'.format(y_pred)) # probabilites (kind of, not exactly probabilites) for each of the actions
 
         # finding probability of intent class with maximum probability
         b = np.max(y_pred, 1)
@@ -174,6 +176,9 @@ class NaturalLanguageUnderstanding(object):
 
             y_pred = np.argmax(y_pred, 1).tolist()
 
+            if self.debug:
+                print('probability corresponding to predicted intent = {}'.format(y_pred)) # probabilites (kind of, not exactly probabilites) for each of the actions
+
             try:
                 intention = available_intents[y_pred[0]]
             except:
@@ -181,7 +186,7 @@ class NaturalLanguageUnderstanding(object):
                 print('predicted class : ' + str(y_pred[0]))
 
         if self.debug:
-            print(intention)
+            print('predicted intention = {}'.format(intention))
 
         # return value (store in member variable)
         self.intention_found = intention
@@ -231,7 +236,7 @@ class NaturalLanguageUnderstanding(object):
 
         if self.debug:
             for slot in slots:
-                print(slot) # slot or agument !!
+                print('predicted slots = {}'.format(slot)) # slot or agument !!
 
         # return value (store in member variable)
         self.slot_found = slots
