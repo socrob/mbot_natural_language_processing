@@ -13,6 +13,7 @@ import threading
 import time
 import os
 import sys
+import yaml
 
 from mbot_nlu.phrases import divide_sentence_in_phrases
 
@@ -355,7 +356,21 @@ class NaturalLanguageUnderstanding(object):
 
 if __name__ == '__main__':
     # example of how to use this class
-    nlu = NaturalLanguageUnderstanding()
+    import rospkg
+    import rospy
+    rospack = rospkg.RosPack()
+    classifier_path = rospack.get_path('mbot_nlu_classifiers') + \
+        '/common/classifiers/' + rospy.get_param('~nlu_classifier', 'mithun_gpsr_robocup')
+    wikipedia_vectors_path = rospack.get_path('mbot_nlu_training') + \
+        '/common/resources/wikipedia_vectors'
+
+    # instantiation
+    nlu = NaturalLanguageUnderstanding(classifier_path=classifier_path, wikipedia_vectors_path=wikipedia_vectors_path)
+
+    # initiating nlu session
+    nlu.initialize_session()
+
+    # examples
     print(nlu.process_sentence('go to the kitchen'))
     print("----")
     print(nlu.process_sentence('pick the bottle'))
