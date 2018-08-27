@@ -13,8 +13,7 @@ import threading
 import time
 import os
 import sys
-
-from mbot_nlu.phrases import divide_sentence_in_phrases
+import yaml
 
 # list of available intents, add to list if your training data has more intents.
 available_intents = ['answer', 'find', 'follow', 'guide', 'take', 'tell', 'go', 'meet']
@@ -26,13 +25,11 @@ class NaturalLanguageUnderstanding(object):
     input text, output intention (action) and slot (arguments)
     to be able to communicate with a robot in a natural way
     '''
-    def __init__(self, classifier_path, wikipedia_vectors_path, debug=False, use_syntaxnet=True):
+    def __init__(self, classifier_path, wikipedia_vectors_path, debug=False):
         self.n_steps = 15
         self.base_path = classifier_path
         # whether to print verbose info
         self.debug = debug
-        # wheter to use syntaxnet to divide sentences
-        self.use_syntaxnet = use_syntaxnet
         # to store the found intention and slots
         self.intention_found = None
         self.slot_found = None
@@ -315,23 +312,11 @@ class NaturalLanguageUnderstanding(object):
         3. match word with wikipedia dictionary to get id (dictionary)
         4. ? TODO
         '''
-        # divide sentence into phrases, i.e. go to the kitchen and grasp the bottle
-        # ['go to the kitchen', 'grasp the bottle']
-        if self.use_syntaxnet:
-            phrases = divide_sentence_in_phrases(sentence)
-        else:
-            phrases = [sentence]
-
-        if phrases is None:
-            # some problem in using syntaxnet - no good verbs? using the raw sentence
-            print('Using raw sentence -> {}'.format(sentence))
-            phrases = [sentence]
-
         # to store return values, intention and slots e.g. recognized_intention = [['go','kitchen'],['grasp','bottle']]
         recognized_intention = []
 
         # iterate over the sentence to extract 1 intention per phrase
-        for j, phrase in enumerate(phrases):
+        for j, phrase in enumerate(sentence):
             if self.debug:
                 # print the phrase which is currently being analyzed
                 print("---")
@@ -355,11 +340,25 @@ class NaturalLanguageUnderstanding(object):
 
 if __name__ == '__main__':
     # example of how to use this class
-    nlu = NaturalLanguageUnderstanding()
-    print(nlu.process_sentence('go to the kitchen'))
+    import rospkg
+    import rospy
+    rospack = rospkg.RosPack()
+    classifier_path = rospack.get_path('mbot_nlu_classifiers') + \
+        '/common/classifiers/' + rospy.get_param('~nlu_classifier', 'mithun_gpsr_robocup')
+    wikipedia_vectors_path = rospack.get_path('mbot_nlu_training') + \
+        '/common/resources/wikipedia_vectors'
+
+    # instantiation
+    nlu = NaturalLanguageUnderstanding(classifier_path=classifier_path, wikipedia_vectors_path=wikipedia_vectors_path)
+
+    # initiating nlu session
+    nlu.initialize_session()
+
+    # examples
+    print(nlu.process_sentence(['go to the kitchen']))
     print("----")
-    print(nlu.process_sentence('pick the bottle'))
+    print(nlu.process_sentence(['pick the bottle']))
     print("----")
-    print(nlu.process_sentence('go to the kitchen and pick the bottle'))
+    print(nlu.process_sentence(['go to the kitchen', 'pick the bottle']))
     print("----")
-    print(nlu.process_sentence('go to the kitchen and pick the bottle from the table'))
+    print(nlu.process_sentence(['go to the kitchen', 'pick the bottle from the table']))

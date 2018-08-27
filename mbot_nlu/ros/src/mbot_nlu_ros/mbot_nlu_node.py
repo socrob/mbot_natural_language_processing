@@ -4,6 +4,7 @@ import rospy
 import copy
 import rospkg
 from mbot_nlu.mbot_nlu_common import NaturalLanguageUnderstanding
+from mbot_nlu.phrases import divide_sentence_in_phrases
 from std_msgs.msg import String
 from mbot_nlu.msg import Slot, ActionSlot, ActionSlotArray
 
@@ -13,8 +14,9 @@ class NLUNode(object):
     input text, outputs intention (action) and slots (arguments)
     '''
     def __init__(self):
-        opt_use_syntaxnet = rospy.get_param('~use_syntaxnet', True)
-        if not opt_use_syntaxnet:
+        # wheter to use syntaxnet to divide sentences
+        self.opt_use_syntaxnet = rospy.get_param('~use_syntaxnet', True)
+        if not self.opt_use_syntaxnet:
             rospy.loginfo('Parameter set to NOT USE syntaxnet - maybe you are still using it in the filter')
         # get paths relative to the location of this pkg
         rospack = rospkg.RosPack()
@@ -22,8 +24,7 @@ class NLUNode(object):
             '/common/classifiers/' + rospy.get_param('~nlu_classifier', 'mithun_gpsr_robocup')
         wikipedia_vectors_path = rospack.get_path('mbot_nlu_training') + \
             '/common/resources/wikipedia_vectors'
-        self.nlu_object = NaturalLanguageUnderstanding(classifier_path, wikipedia_vectors_path, \
-            use_syntaxnet=opt_use_syntaxnet)
+        self.nlu_object = NaturalLanguageUnderstanding(classifier_path, wikipedia_vectors_path)
         # initiating nlu session
         self.nlu_object.initialize_session()
         # get from param server the rate at which this node will run
@@ -56,7 +57,19 @@ class NLUNode(object):
         [['go', ['kitchen is a destination']]]
         [['go', ['kitchen is a destination']], ['grasp', ['bottle is an object']]]
         '''
-        return self.nlu_object.process_sentence(sentence)
+        # divide sentence into phrases, i.e. go to the kitchen and grasp the bottle
+        # ['go to the kitchen', 'grasp the bottle']
+        if self.opt_use_syntaxnet:
+            phrases = divide_sentence_in_phrases(sentence)
+        else:
+            phrases = [sentence]
+
+        if phrases is None:
+            # some problem in using syntaxnet - no good verbs? using the raw sentence
+            print('Using raw sentence -> {}'.format(sentence))
+            phrases = [sentence]
+
+        return self.nlu_object.process_sentence(phrases)
 
 
     def start_nlu(self):
