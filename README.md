@@ -108,3 +108,12 @@ root
            | - intent
            | - slots
 ~~~~
+
+## NLU automated test
+
+To execute the test, simply execute the python script in the test folder. The test input sentences are sourced from `nlu_test_inputs.txt` and corresponding ideal outputs are sourced from `nlu_expected_output.txt` files. Both files can be modified to the user needs, but make sure that the input sentence and the corresponding output are properly paired. Once the test is complete a detailed log of errors will be published in `log_file.txt` in the same folder. 
+
+~~~
+cd /mbot_natural_language_processing/mbot_nlu/common/test
+./mbot_nlu_test.py
+~~~
