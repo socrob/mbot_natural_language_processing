@@ -26,13 +26,16 @@ class NaturalLanguageUnderstanding(object):
     to be able to communicate with a robot in a natural way
     '''
     def __init__(self, classifier_path, wikipedia_vectors_path, debug=False):
-        self.n_steps = 15
+        # classifier path
         self.base_path = classifier_path
+
         # whether to print verbose info
         self.debug = debug
+
         # to store the found intention and slots
         self.intention_found = None
         self.slot_found = None
+
         # if classifier is pedro_gpsr, according dictionary should be used
         dic_name = 'pedro_dictionary' if 'pedro_gpsr' in classifier_path else 'dictionary'
         # test file existance, wikipedia vectors is required
@@ -43,7 +46,7 @@ class NaturalLanguageUnderstanding(object):
             sys.exit()
         # load serialized object wikipedia dictionary
         with open(wikipedia_vectors_path + '/' + dic_name, 'rb') as dict_file:
-            self.dictionary = msgpack.load(dict_file)
+            self.dictionary = msgpack.load(dict_file, raw=False)
 
         # check if user has requested verbose debug info
         if not self.debug:
@@ -71,7 +74,7 @@ class NaturalLanguageUnderstanding(object):
         config.gpu_options.allow_growth = True
 
         if proceed_status.count(True)==len(proceed_status):
-            print('Initiating intent classifier session...')
+            print('Initiating intent classifier session... ', end='')
             # defining intent graph (graph is wrt terminology in TF)
             intent_graph = tf.Graph()
             # initiating tf session with intent graph
@@ -102,7 +105,7 @@ class NaturalLanguageUnderstanding(object):
         proceed_status = [True if var not in locals() else False for var in slot_initialization_var]
 
         if proceed_status.count(True)==len(proceed_status):
-            print('Initiating slot classifier session...')
+            print('Initiating slot classifier session... ', end='')
             # defining slot graph
             slot_graph = tf.Graph()
             # initiating tf session with slot graph
@@ -138,7 +141,7 @@ class NaturalLanguageUnderstanding(object):
         # closing intent and slot sessions
         if not self.intent_sess._closed: self.intent_sess.close()
         if not self.slot_sess._closed: self.slot_sess.close()
-        print('Both tensorflow sessions (intent and slots) are now closed')
+        print('\033[1;31mBoth tensorflow sessions (intent and slots) are now closed\033[0;37m')
 
 
     def find_intention(self, phrase_as_index_vector, vector_size=15):
@@ -271,8 +274,8 @@ class NaturalLanguageUnderstanding(object):
         # warn the user if more than 15 words are used (per filtered_phrase)
         max_phrase_length = 15
         if len(filtered_phrase) >= vector_size:
-            print('WARNING: phrase cant be longer than '+ str(max_phrase_length) +' words')
-            print('Will only consider first ' + str(vector_size) + ' words\n')
+            print('\033[1;33mWARNING: phrase cant be longer than '+ str(max_phrase_length) +' words\033[0;37m')
+            print('\033[1;33mWill only consider first ' + str(vector_size) + ' words\033[0;37m\n')
 
         # generate word_index_vector of length vector_size (15), contains the indexes obtained from wikipedia dictionary
         # for each of the words in the phrase + a bunch of zeros, as many required to reach vector_size (15) elements
@@ -284,11 +287,13 @@ class NaturalLanguageUnderstanding(object):
                 try:
                     word_index_vector.append(self.dictionary[filtered_phrase[i]]) # filtered_phrase[i] is a word
                 except:
-                    print('WARNING: word '+ filtered_phrase[i] + ' was not found on wikipedia most common words dataset, will be replaced with 0')
-                    word_index_vector.append(self.dictionary['zerowordvec'])
+                    print('\033[1;33mWARNING: word '+ filtered_phrase[i] + \
+                      ' was not found on wikipedia most common words dataset, will be replaced with null word vector\033[0;37m')
+                    try: word_index_vector.append(self.dictionary['zerowordvec'])
+                    except: word_index_vector.append(0)
                     pass
             else:
-                # fill with zero
+                # fill with null wordvec index
                 try: word_index_vector.append(self.dictionary['zerowordvec'])
                 except: word_index_vector.append(0)
 
@@ -336,7 +341,7 @@ class NaturalLanguageUnderstanding(object):
                 recognized_intention.append([intention, slot])
             else:
                 # inform the user that the detected intention is not known
-                print('WARNING : Detected intention not known!')
+                print('\033[1;33mWARNING : Detected intention not known!\033[0;37m')
 
             # NOTE: will continue looping over sentence and will process next phrase!
 

@@ -15,6 +15,9 @@ class MbotNluTest(unittest.TestCase):
         '''
         Sets up the test fixture before exercising it
         '''
+        print('\033[1;32mNLU TEST\033[0;37m')
+        print('\033[1;32m==========================\033[0;37m')
+        # print('\033[1;32m--------------------------\033[0;37m')
         # load test parameters from yaml file
         yaml_dict = yaml.load(open('../../../mbot_nlu_training/ros/config/config_mbot_nlu_training.yaml'))['test_params']
         classifier_path = yaml_dict['classifier_path']
@@ -28,11 +31,11 @@ class MbotNluTest(unittest.TestCase):
 
         # initialize session
         self.nlu.initialize_session()
-        print('nlu session is running')
+        print('\033[1;32mnlu session is running\033[0;37m')
 
     def tearDown(self):
         self.nlu.close_session()
-        print('nlu session is closed')
+        print('\033[1;31mnlu session is closed\033[0;37m')
 
     def read_sentences_from_textfile(self, filename):
         '''
@@ -41,9 +44,9 @@ class MbotNluTest(unittest.TestCase):
         sentences = []
         with open(self.pwd + filename) as fp:
             for line in fp:
-                sentences.append(line)
-        # rm sentences with #
-        sentences = [item for item in sentences if '#' not in item]
+                sentences.append(line.strip('\n'))
+        # rm commented sentences
+        sentences = [[item] for item in sentences if '#' not in item]
         return sentences
 
     def read_expected_values_from_textfile(self, filename):
@@ -96,16 +99,12 @@ class MbotNluTest(unittest.TestCase):
         # read nlu input and expected output from textfiles
         sentences = self.read_sentences_from_textfile('nlu_test_inputs.txt')
         expected_output = self.read_expected_values_from_textfile('nlu_expected_output.txt')
-        # print(expected_output)
 
+        #progressbar
         bar = progressbar.ProgressBar(max_value=len(sentences), redirect_stdout=True)
 
         test_total_number = 0
-
         for i, sentence in enumerate(sentences):
-
-            # print(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
-
             # Check if NLU has an output in not continue to the next sentence
             self.result = None
             try:
@@ -131,7 +130,7 @@ class MbotNluTest(unittest.TestCase):
 
             # Testing intent
             if self.test_choice=='intent' or self.test_choice=='both':
-                with self.subTest(Sentence_and_Intent = sentence.rstrip() + '--' + exp_intent):
+                with self.subTest(Sentence_and_Intent = sentence[0].rstrip() + '--' + exp_intent):
                     # counting test number
                     test_total_number += 1
 
@@ -147,21 +146,23 @@ class MbotNluTest(unittest.TestCase):
 
                     # conditions for the test to be considered as passed for each slot
                     # If there is absense specific slot, there is an IndexError
-                    with self.subTest(Sentence_and_Slot = sentence.rstrip() + '--' + exp_slots[j]):
+                    with self.subTest(Sentence_and_Slot = sentence[0].rstrip() + '--' + exp_slots[j]):
                         self.assertEqual(self.result[0][1:][0][j], exp_slots[j])
 
             bar.update(i)
 
         bar.finish()
-        print('Total numer of tests run is = {} \n see the log_file.txt for more information'.format(test_total_number))
+        print('\033[1;32m--------------------------\033[0;37m')
+        print('\033[1;32mTotal numer of tests run is = {} \nsee the log_file.txt for detailed report\033[0;37m'.format(test_total_number))
+        print('\033[1;32m--------------------------\033[0;37m')
 
 if __name__ == '__main__':
+    # env variables for tf and cuda
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
     os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+
+    # test and log results
     log_file = 'log_file.txt'
-    # move previous log to log_file_last
     f = open(log_file, "w")
     runner = unittest.TextTestRunner(f)
     unittest.main(testRunner=runner)
-    # unittest.main()
-    # f.close()
