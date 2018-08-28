@@ -53,40 +53,38 @@ class MbotNluTest(unittest.TestCase):
         '''
         get the expected intent and slots from text file
         '''
-        available_slots = ['Person', 'Object', 'Source', 'Destination', 'Tell'] # 'what to tell' doesn't work, need updating
-        expected_output = [] # [['go', 'to the kitchen'],['pick','coke is an object'], ... ]
+        available_slots = ['Person', 'Object', 'Source', 'Destination', 'Sentence']
+        expected_output = [] # [['go', [('destination', 'kitchen')],['grasp',[('object', 'coke')], ... ]
         with open(self.pwd + filename) as fp:
             for line in fp:
-                # if '#' in line, continue to next line
+                # skip commented lines
                 if '#' in line: continue
-
                 # strip end chars and split
                 line = line.rstrip().split()
-
-                #intent extraction and appending
-                intent = line.pop(0) # intent is removed from line
-                expected_output.append([intent])
-
+                #intent extraction
+                intent = line.pop(0)
                 # extracting the slot index from the current line
                 slot_idx_list = []
                 for slot in available_slots:
                     try: slot_idx_list.append(line.index(slot))
                     except: continue
-
                 # Sorting the slot indexes
                 slot_idx_list = sorted(slot_idx_list, key=int)
+                # last element index
+                slot_idx_list.append(len(line))
+                # print(slot_idx_list)
 
                 #slots extraction and appending to the current intent
-                prev_slot_idx = 0
-                for slot_idx in slot_idx_list:
-                    # print('line = {}'.format(line))
-                    # print('slot index = {}'.format(slot_idx))
-                    # slots are extracted according to their indexes from previous search
-                    slot = str(' '.join(line[prev_slot_idx:slot_idx+1]))
-                    # appending to the last item in the list (which is the current intent)
-                    expected_output[-1].append(slot.lower())
-                    # print('slot = {}'.format(slot))
-                    prev_slot_idx = slot_idx+1
+                slots = []
+                for v, w in zip(slot_idx_list, slot_idx_list[1:]):
+                  # slots are extracted according to their indexes from previous search
+                  slot = (line[v].lower(), ' '.join(line[v+1:w]))
+                  # appending to the last item in the list (which is the current intent)
+                  slots.append(slot)
+
+                # append intent and slots
+                expected_output.append([[intent], slots])
+                # print(expected_output)
 
         return expected_output
 
@@ -101,14 +99,16 @@ class MbotNluTest(unittest.TestCase):
         expected_output = self.read_expected_values_from_textfile('nlu_expected_output.txt')
 
         #progressbar
-        bar = progressbar.ProgressBar(max_value=len(sentences), redirect_stdout=True)
+        bar = progressbar.ProgressBar(max_value=len(sentences))
 
         test_total_number = 0
         for i, sentence in enumerate(sentences):
+            # print(i)
             # Check if NLU has an output in not continue to the next sentence
             self.result = None
             try:
                 self.result = self.nlu.process_sentence(sentence)
+                # print(self.result)
             except:
                 print('result not found for sentece = {}'.format(sentence))
                 continue
@@ -125,12 +125,13 @@ class MbotNluTest(unittest.TestCase):
                 continue
 
             # Assigning expected intent and slots
-            exp_intent = expected_output[i][0]
-            exp_slots = expected_output[i][1:]
+            exp_intent = expected_output[i][0][0]
+            exp_slots = expected_output[i][1]
+            # print(exp_slots)
 
             # Testing intent
             if self.test_choice=='intent' or self.test_choice=='both':
-                with self.subTest(Sentence_and_Intent = sentence[0].rstrip() + '--' + exp_intent):
+                with self.subTest(Sentence_and_Intent = sentence[0].rstrip() + '--' + str(exp_intent)):
                     # counting test number
                     test_total_number += 1
 
@@ -140,18 +141,20 @@ class MbotNluTest(unittest.TestCase):
 
             # Testing slots
             if self.test_choice=='slot'or self.test_choice=='both':
-                for j in range(len(exp_slots)):
+                for i, slot in enumerate(exp_slots):
                     # counting test number
                     test_total_number += 1
 
                     # conditions for the test to be considered as passed for each slot
                     # If there is absense specific slot, there is an IndexError
-                    with self.subTest(Sentence_and_Slot = sentence[0].rstrip() + '--' + exp_slots[j]):
-                        self.assertEqual(self.result[0][1:][0][j], exp_slots[j])
+                    with self.subTest(Sentence_and_Slot = sentence[0].rstrip() + '--' + str(slot)):
+                        self.assertEqual(self.result[0][1][i], slot)
 
-            bar.update(i)
+            bar.update(int(i))
 
         bar.finish()
+
+        # print additional information
         print('\033[1;32m--------------------------\033[0;37m')
         print('\033[1;32mTotal numer of tests run is = {} \nsee the log_file.txt for detailed report\033[0;37m'.format(test_total_number))
         print('\033[1;32m--------------------------\033[0;37m')
