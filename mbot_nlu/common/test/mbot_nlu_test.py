@@ -155,9 +155,12 @@ class MbotNluTest(unittest.TestCase):
         bar.finish()
 
         # print additional information
+        print('\033[1;32m==========================\033[0;37m')
+        print('\033[1;32mTEST COMPLETE\033[0;37m')
         print('\033[1;32m--------------------------\033[0;37m')
         print('\033[1;32mTotal numer of tests run is = {} \nsee the log_file.txt for detailed report\033[0;37m'.format(test_total_number))
         print('\033[1;32m--------------------------\033[0;37m')
+
 
 if __name__ == '__main__':
     # env variables for tf and cuda
