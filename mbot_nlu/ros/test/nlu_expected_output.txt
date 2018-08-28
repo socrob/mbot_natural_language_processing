@@ -1,2 +1,0 @@
-go kitchen is a destination
-go bedroom is a destination

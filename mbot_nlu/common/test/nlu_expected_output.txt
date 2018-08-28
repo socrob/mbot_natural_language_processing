@@ -1,0 +1,154 @@
+# #============================================================
+# # GPSR test inputs
+# #============================================================
+# go
+go Destination cutlery drawer
+go Destination dresser
+go Destination fireplace
+go Destination kitchen
+go Destination kitchen
+go Destination kitchen
+go Destination kitchen
+go Destination kitchen
+go Destination kitchen
+go Destination kitchen
+go Destination kitchen
+go Destination bedroom
+go Destination bedroom
+go Destination bedroom
+go Destination kitchen
+go Destination bedroom
+go Destination fireplace
+# take
+take Object pringles
+take Object pasta
+take Object pringles
+take Object pasta
+take Object pasta
+take Object pasta
+take Object pasta
+take Object pasta
+take Object pasta Source fireplace
+take Object pasta Source microwave
+take Person me Object pasta
+take Person me Object pasta
+take Object pasta Destination fireplace
+take Object pasta Destination fireplace
+take Object pasta Destination fireplace
+take Object pasta Person peyton
+take Object pasta Person peyton
+take Object pasta Person peyton
+take Person me Object pasta Source fireplace
+take Person me Object pasta Source fireplace
+take Object pasta Person peyton Destination fireplace
+take Object pasta Person me
+take Object pasta Person me
+take Object pasta Person me
+take Object pasta Person peyton Destination fireplace
+take Object pasta Person peyton Destination fireplace
+take Person peyton Destination fireplace Object pasta Source microwave
+take Person peyton Destination fireplace Object pasta Source microwave
+take Object pasta Source microwave
+take Object pasta Destination fireplace
+take Object pasta Source microwave
+take Object pasta Source microwave Destination fireplace
+take Object pasta Source microwave Destination fireplace
+take Object pasta Destination freezer
+take Object pasta Destination freezer
+take Object pasta Destination microwave
+take Object pasta Destination microwave
+take Object pasta Source microwave Destination fireplace
+take Object pasta Source microwave Destination fireplace
+take Object pasta Source microwave Destination fireplace
+take Object pasta Source microwave Destination fireplace
+# find
+find Object paper clip
+find Object bag
+find Object pasta
+find Object pringles
+find Object pasta
+find Object pasta
+find Object pasta
+find Object pasta
+find Object pasta Destination bathtub
+find Object pasta Destination bathtub
+find Object pasta Destination bathtub
+find Person peyton
+find Person peyton
+find Person peyton
+find Person peyton Destination bathtub
+find Person peyton Destination bathtub
+find Person peyton Destination bathtub
+find Person someone
+find Person someone
+find Person someone
+find Person person
+find Person person
+find Person person
+find Person person Destination bathtub
+find Person person Destination bathtub
+find Person person Destination bathtub
+find Person someone Destination bathtub
+find Person someone Destination bathtub
+find Person someone Destination bathtub
+# answer
+answer
+answer Person peyton
+answer Person peyton Destination fireplace
+# tell
+tell Sentence a joke
+tell Sentence what day is today Person peyton
+tell Sentence what day is today Person peyton
+tell Sentence what day is today Person peyton Destination fireplace
+tell Sentence what day is today Person peyton Destination fireplace
+tell Sentence something about yourself
+tell Sentence something about yourself
+tell Person me Sentence something about yourself
+tell Person me Sentence name of the person Destination fireplace
+tell Person me Sentence name of the person Destination bathtub
+tell Person me Sentence how many Object pasta Destination cutlery drawer
+#============================================================
+# EEGPSR test inputs
+#============================================================
+# go
+go Destination dining room
+# take
+take Object pasta Person me
+take Object pasta Person me
+take Object pasta Person peyton Destination fireplace
+take Object pasta Person peyton Destination fireplace
+take Object pasta Source fireplace
+take Object pasta Destination cutlery drawer
+take Object pasta Destination cutlery drawer
+take Object pasta Destination cutlery drawer
+take Object pasta Destination cutlery drawer
+take Object pasta Destination cutlery drawer
+take Object pasta Destination cutlery drawer
+# find
+find Object pasta
+find Object pasta
+find Object pasta Destination bathtub
+find Object pasta Destination bathtub
+find Person peyton
+find Person peyton
+find Person peyton Destination bathtub
+find Person peyton Destination bathtub
+find Person peyton Destination fireplace
+find Person peyton Destination fireplace
+find Person peyton Destination fireplace
+find Person peyton Destination fireplace
+find Person peyton Destination fireplace
+# guide
+guide Person peyton
+guide Person peyton Destination fireplace
+guide Person peyton Destination fireplace
+guide Person peyton Destination fireplace
+guide Person peyton Destination fireplace
+guide Person peyton Destination fireplace
+guide Person peyton Destination fireplace
+# follow
+follow Person peyton
+follow Person peyton
+follow Person peyton
+follow Person peyton
+follow Person peyton

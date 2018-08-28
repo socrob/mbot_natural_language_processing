@@ -1,0 +1,155 @@
+#============================================================
+# GPSR test inputs
+#============================================================
+# go (17)
+go to the cutlery drawer
+go to the dresser
+navigate to the fireplace
+go to the kitchen
+walk to the kitchen
+proceed to the kitchen
+move to the kitchen
+robot can you move to the kitchen
+mbot can you please move to the kitchen
+fly to the kitchen
+jump to the kitchen please
+roll to the bedroom
+advance to the bedroom
+robot advance to the bedroom please
+hello robot travel to the kitchen please
+hello robot could you advance to the bedroom please
+robot leave to the fireplace please
+# take (40)
+clasp this pringles for me please
+could you cinch this pasta please
+please hold the pringles
+could you grip the pasta please
+grasp the pasta
+could you please grasp the pasta
+pick up the pasta
+robot pick up the pasta
+grasp the pasta from the fireplace
+pick up the pasta from the microwave
+bring me the pasta
+give me the pasta
+take the pasta to the fireplace
+deliver the pasta to the fireplace
+put the pasta to the fireplace
+take the pasta to peyton
+deliver the pasta to peyton
+give the pasta to peyton
+bring me the pasta from the fireplace
+give me the pasta from the fireplace
+bring the pasta to peyton at the fireplace
+bring the pasta to me please
+deliver the pasta to me
+hello give the pasta to me
+deliver the pasta to peyton at the fireplace
+give the pasta to peyton at the fireplace
+bring to peyton at the fireplace the pasta from the microwave
+give to peyton at the fireplace the pasta from the microwave
+get the pasta from the microwave
+get the pasta to the fireplace
+take the pasta from the microwave
+get the pasta from the microwave to the fireplace
+take the pasta from the microwave to the fireplace
+place the pasta on the freezer
+put the pasta on the freezer
+grasp the pasta to the microwave
+pick up the pasta to the microwave
+grasp the pasta from the microwave to the fireplace
+pick up the pasta from the microwave to the fireplace
+carry the pasta from the microwave to the fireplace
+robot can you please carry the pasta from the microwave to the fireplace
+# find (28)
+spot the paper clip
+notice the bag
+identify the pasta for me
+detect the pringles for me please
+discover the pasta
+find the pasta
+look for the pasta
+locate the pasta
+find the pasta in the bathtub
+look for the pasta in the bathtub
+locate the pasta in the bathtub
+find peyton
+look for peyton
+locate peyton
+find peyton in the bathtub
+look for peyton in the bathtub
+locate peyton in the bathtub
+find someone
+locate someone
+look for someone
+find a person
+locate a person
+look for a person
+find a person in the bathtub
+look for a person in the bathtub
+locate a person in the bathtub
+find someone in the bathtub
+look for someone in the bathtub
+locate someone in the bathtub
+# answer (3)
+answer a question
+answer a question to peyton
+answer a question to peyton at the fireplace
+# tell (11)
+tell a joke
+tell what day is today to peyton
+say what day is today to peyton
+tell what day is today to peyton at the fireplace
+say what day is today to peyton at the fireplace
+say something about yourself
+tell something about yourself
+tell me something about yourself
+tell me the name of the person at the fireplace
+tell me the name of the person in the bathtub
+tell me how many pasta there are on the cutlery drawer
+#============================================================
+# EEGPSR test inputs
+#============================================================
+# go (1)
+enter the dining room
+# take (11)
+hand the pasta to me
+hand over the pasta to me
+hand the pasta to peyton at the fireplace
+hand over the pasta to peyton at the fireplace
+retrieve the pasta from the fireplace
+place pasta on the cutlery drawer
+put pasta on the cutlery drawer
+set the pasta on the cutlery drawer
+set pasta on the cutlery drawer
+leave the pasta on the cutlery drawer
+leave pasta on the cutlery drawer
+# find (13)
+pinpoint the pasta
+spot the pasta
+pinpoint the pasta in the bathtub
+spot the pasta in the bathtub
+pinpoint peyton
+spot peyton
+pinpoint peyton in the bathtub
+spot peyton in the bathtub
+find peyton at the fireplace
+look for peyton at the fireplace
+locate peyton at the fireplace
+pinpoint peyton at the fireplace
+spot peyton at the fireplace
+# guide (7)
+accompany peyton
+accompany peyton to the fireplace
+conduct peyton to the fireplace
+escort peyton to the fireplace
+guide peyton to the fireplace
+lead peyton to the fireplace
+take peyton to the fireplace
+# follow (5)
+come after peyton
+go after peyton
+come behind peyton
+go behind peyton
+follow peyton
+#
