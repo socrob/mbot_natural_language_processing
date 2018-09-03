@@ -48,7 +48,7 @@ sudo apt-get install -y ${debian_packagelist[@]}
 
 # custom commands
 sudo apt-get install --only-upgrade bazel
-sudo -H pip install pygraphviz --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/"
+pip install pygraphviz --install-option="--include-path=/usr/include/graphviz" --install-option="--library-path=/usr/lib/graphviz/" --user
 
 # clone tensorflow models (SocRob fork) including submodules
 mkdir $HOME/Software
@@ -64,4 +64,4 @@ cd $HOME/Software/models/syntaxnet
 
 mkdir /tmp/syntaxnet_pkg
 bazel-bin/dragnn/tools/build_pip_package --output-dir=/tmp/syntaxnet_pkg
-sudo -H pip install /tmp/syntaxnet_pkg/syntaxnet-0.2-cp27-cp27mu-linux_x86_64.whl
+pip install /tmp/syntaxnet_pkg/syntaxnet-0.2-cp27-cp27mu-linux_x86_64.whl --user
