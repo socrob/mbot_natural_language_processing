@@ -71,6 +71,7 @@ rostopic echo /hri/nlu/mbot_nlu/output_recognition
 - Trigger the node with some text
 ~~~~
 rostopic pub --once /hri/nlu/mbot_nlu/input_sentence std_msgs/String "data: 'go to the kitchen and pick the spoon'"
+~~~~
 
 ## DNN training setup
 - Clone this repository to your PC dedicated for training the DNN using the below command  
