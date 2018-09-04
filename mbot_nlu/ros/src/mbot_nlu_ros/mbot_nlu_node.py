@@ -4,7 +4,7 @@ import rospy
 import copy
 import rospkg
 from mbot_nlu.mbot_nlu_common import NaturalLanguageUnderstanding
-from mbot_nlu.phrases import divide_sentence_in_phrases
+from mbot_nlu.simple_phrase_divider import divide_sentence_in_phrases
 from std_msgs.msg import String
 from mbot_nlu.msg import Slot, ActionSlot, ActionSlotArray
 
