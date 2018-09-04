@@ -54,21 +54,24 @@ rostopic pub --once /hri/nlu/mbot_nlu/input_sentence std_msgs/String "data: 'go 
 
 # Multi sentence classification
 
+- Set ros parameter to use sentence divider
+~~~~
+roscd mbot_nlu
+gedit ros/launch/mbot_nlu.launch
+set "use_syntaxnet" param to "True"
+save and close the file
+~~~~
 - Run the launch file
 ~~~~
-roslaunch mbot_nlu_filter filter_with_nlu.launch nlu_classifier:=mithun_gpsr_robocup
+roslaunch mbot_nlu mbot_nlu.launch nlu_classifier:=mithun_gpsr_robocup
 ~~~~
 - Visualize the intention and arguments
 ~~~~
-rostopic echo /nlu_filter/full_nlu_response
+rostopic echo /hri/nlu/mbot_nlu/output_recognition
 ~~~~
 - Trigger the node with some text
 ~~~~
-rostopic pub --once /recognized_speech std_msgs/String "data: 'go to the kitchen and pick the spoon'"
-~~~~
-- Confirm the recieved text ("_Filtered - asked for confirmation")
-~~~~
-rostopic pub --once /recognized_speech std_msgs/String "data: 'it is correct'"
+rostopic pub --once /hri/nlu/mbot_nlu/input_sentence std_msgs/String "data: 'go to the kitchen and pick the spoon'"
 ~~~~
 
 ## DNN training setup
