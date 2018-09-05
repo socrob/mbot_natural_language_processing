@@ -1,0 +1,36 @@
+﻿###############################################################################
+#
+# Example 1
+#
+###############################################################################
+
+Leave shampoo on the cabinet, look for Robin in the living room, and go behind her.
+
+
+###############################################################################
+#
+# Example 2
+#
+###############################################################################
+
+Set water on the cabinet, pinpoint Robin at the chair, and accompany him to the exit.
+
+###############################################################################
+#
+# Example 5
+#
+###############################################################################
+
+Get the peach from the center table, hand over it to me, and answer a question.
+
+question
+        Q: What is the national anthem of Canada?
+        A: O Canada.
+
+###############################################################################
+#
+# Example 6
+#
+###############################################################################
+
+Set water on the cabinet, pinpoint Robin at the chair, and accompany him to the exit.
