@@ -23,13 +23,13 @@ class BulkdData2SimplePhrases(object):
     Get file name to process. If not entered correctly print more info and request again
     '''
     while not self.file_name_flag:
-      file_name = raw_input(colored("\nPlease enter the file name you want to process[sample.txt]\n",'green')) or "sample.txt"
+      file_name = raw_input(colored("\nPlease enter the relative path of file (w.r.t pwd) you want to process[sample.txt]\n",'green')) or "sample.txt"
       if '.txt' not in file_name:
-        print(colored('Please re-enter the file name including the extension','yellow'))
+        print(colored('Please re-enter the file path including the extension','yellow'))
         self.file_name_flag = False
       else:
         self.file_name_flag = True
-    return file_name
+    return str(file_name)
 
   def write_to_file(self, split):
     with open('processed.txt','w') as file:
