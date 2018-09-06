@@ -1,31 +1,50 @@
-NOTE: This package is purely based on python and tensorflow
-Does not depend on ROS
+NOTE: This package is purely based on python 3 and does not depend up on ros.
 
-Edited by Mithun K
+This Readme has additional information regarding the DNN training procedure compared to the [main README file](https://github.com/socrob/mbot_natural_language_processing/blob/master/README.md). We prefer to train the neural networks in virutal environment. The setup is as follows.
 
-Step by step on how to setup your computer for training.
+## Virtual environment Setup*
 
-1. Install TF using virtual env (ref: https://www.tensorflow.org/install/install_linux#installing_with_virtualenv)
-2. Download the training files (http://dante.isr.tecnico.ulisboa.pt/mkinarullathil/mbot_natural_language_processing/tree/intent_and_slots_training_and_results/mbot_nlu_training) to Batatinha
-3. Go to common/src/mbot_nlu_training/gpsr/
-4. The intention_NN and slots_NN folders has all the required files for training,
-   all you have to do is run the ```train_nn_model.py``` in respective folders.
-5. Open glances to see the usage of memory and GPU. If you see anyone using gpu 0, change the gpu number in the train_nn_model script.
-6. Don't run both trainings at the same time.
-7. It's a usual convention to run the file with the gpu number, for the intention of feedback for the others using the same system.
-   i.e: python train_nn_model.py gpu 0
-8. The output of the training is saved in the same folder.
+- Make sure you have virtual env installed, if not, please install it using this command
+~~~
+sudo apt-get install python3-pip python3-dev python-virtualenv
+~~~
+- Install pip using one of the below commands
+~~~
+sudo pip install -U pip 
+easy_install -U pip
+~~~
+- Create a directory for the virtual environment, choose a Python interpreter and activate the virtual env
+~~~
+mkdir ~/tensorflow
+cd ~/tensorflow
+virtualenv --system-site-packages -p python3 venv
+source ~/tensorflow/venv/bin/activate
+~~~
+When the Virtualenv is activated, the shell prompt displays as (venv) $  
 
-Brief introduction to train_nn_model.py
+- Upgrade pip
+~~~
+pip install -U pip
+~~~
 
-1. I have added comments in intention training file (not available in slots).
-2. There are two parts. One is importing data and processing the sentences to word vectors. (This happens in the first 15-20 mins of training)
-3. inputs file has the sentences and output has the intentions.
-   Each word in each sentence of the input is searched in ```dictionary``` and
-   corresponding ```wordvector``` is saved as a list.
-   The outputs are converted to oneHot vectors
-   (eg: [1,0,0,0,0,0,0,0,0], [0,0,0,0,1,0,0,0,0]).
-   The position of 1 is corresponding to the position of the intent in the list of 9 intents.
+## Installing DNN training dependencies and initiating the DNN training
+
+For installing debs and initiating the DNN training please follow the DNN training set up in the [main README](https://github.com/socrob/mbot_natural_language_processing/blob/master/README.md)
+
+## Additional tips for training procedure
+
+- If you want to see the graphics processor and memory usage and the index of gpu (to be updated in the [configuration file](https://github.com/socrob/mbot_natural_language_processing/blob/master/mbot_nlu_training/ros/config/config_mbot_nlu_training.yaml)), use [glances](https://nicolargo.github.io/glances/). Glances can be installed using,
+~~~
+pip install glances --user
+~~~
+
+- If you have multiple GPUs you can run the intention and slots training at the same time, given that you have updated the GPU index in the [configuration file](https://github.com/socrob/mbot_natural_language_processing/blob/master/mbot_nlu_training/ros/config/config_mbot_nlu_training.yaml)
+
+## Brief introduction to the DNN training script
+
+The input sentences are converted to wordvectors using [GloVe](https://nlp.stanford.edu/projects/glove/) pre-trained vectors and the labels are converted to one-hot vectors before the training. The loss function (softmax cross entropy) is minimized using Adam optimizer with a constant learning rate. The DNN (LSTM) properties (Layers and number of cells) 
+can be altered in the [configuration file](https://github.com/socrob/mbot_natural_language_processing/blob/master/mbot_nlu_training/ros/config/config_mbot_nlu_training.yaml).
+
+*Follow https://www.tensorflow.org/install/install_linux#installing_with_virtualenv in case of any doubts about the virtual environment setup and tensorflow installation.
 
 end of file
-
