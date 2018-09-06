@@ -109,17 +109,17 @@ gedit mbot_nlu_training/ros/config/config_mbot_nlu_training.yaml
 ~~~~
 - Generate the data and initiate the training 
   - Intention classifier training
-~~~~
-cd mbot_nlu_training/common/src/mbot_nlu_training/gpsr/intention_NN/
-./gpsr_data_generator.py (wait for completion)
-./train_nn_model.py
-~~~~
+  ~~~~
+  cd mbot_nlu_training/common/src/mbot_nlu_training/gpsr/intention_NN/
+  ./gpsr_data_generator.py (wait for completion)
+  ./train_nn_model.py
+  ~~~~
   - Arguments/ Slots classifier training
-~~~~
-cd mbot_nlu_training/common/src/mbot_nlu_training/gpsr/slots_NN/
-./gpsr_data_generator.py (wait for completion)
-./train_nn_model.py
-~~~~
+  ~~~~
+  cd mbot_nlu_training/common/src/mbot_nlu_training/gpsr/slots_NN/
+  ./gpsr_data_generator.py (wait for completion)
+  ./train_nn_model.py
+  ~~~~
 
 Upon training completion the classifiers will saved in latest_intents_classifier and latest_slots_classifier
 in the respective folders (intention_NN/slots_NN). Copy the files in the above mentioned folders to
@@ -139,6 +139,15 @@ root
 To execute the test, simply execute the python script in the test folder. The test input sentences are sourced from `nlu_test_inputs.txt` and corresponding ideal outputs are sourced from `nlu_expected_output.txt` files. Both files can be modified to the user needs, but make sure that the input sentence and the corresponding output are properly paired. Once the test is complete a detailed log of errors will be published in `log_file.txt` in the same folder. 
 
 ~~~
-cd /mbot_natural_language_processing/mbot_nlu/common/test
+cd mbot_natural_language_processing/mbot_nlu/common/test
 ./mbot_nlu_test.py
+~~~
+
+## RoboCup bulk data to simple clean sorted phrases
+
+A script has been added to process the bulk generated data from the [RoboCup command generator](https://github.com/kyordhel/GPSRCmdGen) into clean, sorted, unique and simple list of phrases. A sample source file is also added in the same directory.
+
+~~~
+cd mbot_natural_language_processing/mbot_nlu_training/common/scripts
+./process_raw.py
 ~~~
