@@ -14,7 +14,7 @@ There are two parts to this repository. First, the DNN inference or the usage of
 ## Minimum Requirements (Inference / Training)
 - Processor -  Intel(R) Core(TM) i7-3630QM CPU @ 2.40GHz / Intel(R) Core(TM) i7-5820K CPU @ 3.30GHz
 - Memory -  2GB RAM / 5GB RAM
-- Graphics -  Not required / NVIDEA GEFORCE GTX 1060
+- Graphics -  Not required / NVIDIA GEFORCE GTX 1060
 - OS -  Ubuntu 16.04 with ROS Kinetic
 
 ## DNN Inference setup
