@@ -1,5 +1,6 @@
 # ignore the classifiers
 mbot_nlu_classifiers/common/classifiers/*
+mbot_nlu_training/common/scripts/processed.txt
 
 # ignore compiled and temp files
 *.pyc
