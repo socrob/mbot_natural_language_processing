@@ -2,7 +2,7 @@ NOTE: This package is purely based on python 3 and does not depend up on ros.
 
 This Readme has additional information regarding the DNN training procedure compared to the [main README file](https://github.com/socrob/mbot_natural_language_processing/blob/master/README.md). We prefer to train the neural networks in virutal environment. The setup is as follows.
 
-## Virtual environment Setup
+## Virtual environment Setup*
 
 - Make sure you have virtual env installed, if not, please install it using this command
 ~~~
@@ -13,7 +13,7 @@ sudo apt-get install python3-pip python3-dev python-virtualenv
 sudo pip install -U pip 
 easy_install -U pip
 ~~~
-- Create a directory for the virtual environment, choose a Python interpreter and activate the virtual env*
+- Create a directory for the virtual environment, choose a Python interpreter and activate the virtual env
 ~~~
 mkdir ~/tensorflow
 cd ~/tensorflow
