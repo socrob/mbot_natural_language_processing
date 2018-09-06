@@ -5,7 +5,7 @@ from termcolor import colored
 
 class BulkdData2SimplePhrases(object):
   """This class contains methods to transform the bulk generated data from RoboCup command generator
-  to simple sorted (Alphabetical) phrases. Lines with #, questions and answers, and duplpicates are also removed.
+  to simple sorted (Alphabetical) phrases. Lines with #, questions and answers, and duplicates are also removed.
   The final list of phrases (1 phrase per line) is saved in a text file named 'processed'. This script
   helps in collecting and cleaning data required for training the neural network.
   """
@@ -36,9 +36,6 @@ class BulkdData2SimplePhrases(object):
         for item in split: file.write("%s\n" % item)
 
   def process_file(self):
-    '''
-    Main method where other methods are called from
-    '''
     # get file name
     file_name = self.get_file_name()
 
@@ -48,7 +45,7 @@ class BulkdData2SimplePhrases(object):
     # rm lines with # and blank lines
     contents = [line.rstrip().replace('.','') for line in contents if '#' not in line and not line.startswith('\n')]
 
-    # split sentences at [','] and remove 'and', qustions, answers and duplicates if there is
+    # split sentences at [','] and remove 'and', questions, answers and duplicates if there is
     split = [line.split(',') for line in contents]
     split = [line.replace(' and','').strip().lower() for i in range(len(split)) for line in split[i]]
     split = [line for line in split if not line.startswith('a:') and not line.startswith('q:') and not line.startswith('question')]
