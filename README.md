@@ -143,7 +143,7 @@ cd mbot_natural_language_processing/mbot_nlu/common/test
 ./mbot_nlu_test.py
 ~~~
 
-## RoboCup bulk data to simple clean sorted phrases
+## RoboCup Command Generator bulk data processor
 
 A script has been added to process the bulk generated data from the [RoboCup command generator](https://github.com/kyordhel/GPSRCmdGen) into clean, sorted, unique and simple list of phrases. A sample source file is also added in the same directory.
 
