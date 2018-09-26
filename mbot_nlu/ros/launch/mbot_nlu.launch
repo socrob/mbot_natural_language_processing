@@ -7,7 +7,7 @@
     <arg name="ns" default="hri/nlu"/>
 
     <!-- select nlu desired classifier here -->
-    <arg name="nlu_classifier" default="mithun_gpsr_robocup"/>
+    <arg name="nlu_classifier" default="mithun_eegpsr_robocup"/>
 
     <!-- the string containing the sentence from which the intention and args will get extracted -->
     <arg name="nlu_input" default="~input_sentence" />
