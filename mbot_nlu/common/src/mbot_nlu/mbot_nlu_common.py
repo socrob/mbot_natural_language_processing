@@ -15,8 +15,9 @@ import os
 import sys
 import yaml
 
-# list of available intents, add to list if your training data has more intents.
-available_intents = ['answer', 'find', 'follow', 'guide', 'take', 'tell', 'go', 'meet']
+# load list of available intents from configuration file, add to list if your training data has more intents.
+available_intents = yaml.load(open('../../../../mbot_nlu_training/ros/config/config_mbot_nlu_training.yaml'))['test_params']['available_intents']
+
 
 class NaturalLanguageUnderstanding(object):
 
