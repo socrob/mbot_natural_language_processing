@@ -13,8 +13,8 @@ random_state = eval(yaml_dict['resample_random_state'])
 # params for balancing individual structures
 # ================================================================================================================
 # number of types of different structured sentences in each of intent classes
-# structure: 'intent': (item_count, True/False)
-n_struct = {'go': (44, False), 'take': (52, True), 'find': (37, True), 'answer': (3, False), 'tell': (10, False), 'guide': (7, True), 'follow': (5, True), 'meet': (0, False)}
+# structure: 'intent': (item_count, True/False).
+n_struct = {'go': (44, False), 'take': (52, True), 'find': (44, True), 'answer': (3, False), 'tell': (10, False), 'guide': (36, True), 'follow': (28, True), 'meet': (0, False)}
 
 # number of samples per structe required enough to make balances data
 n_samples_per_intent = int(yaml_dict['n_examples']/len([item for item in n_struct.keys() if n_struct[item][0]!=0 and n_struct[item][1]]))
@@ -92,7 +92,7 @@ locations_at = ['wardrobe', 'nightstand', 'bookshelf', 'coffee table', 'side tab
 locations = list(set(locations_at+locations_in+locations_on))
 
 # ================================================================================================================
-# names
+# names and pronouns
 # ================================================================================================================
 names_female = ['hanna', 'barbara', 'samantha', 'erika', 'sophie', 'jackie', 'skyler', 'jane', 'olivia', 'emily', 'amelia', 'lily',
                 'grace', 'ella', 'scarlett', 'isabelle', 'charlotte', 'daisy', 'sienna', 'chloe', 'alice', 'lucy', 'florence', 'rosie',
@@ -105,7 +105,9 @@ names_male = ['ken', 'erik', 'samuel', 'skyler', 'brian', 'thomas', 'edward', 'm
             'lewis', 'matthew', 'harvey', 'ryan', 'tommy', 'michael', 'nathan', 'blake', 'charles', 'connor', 'jamie', 'elliot', 'louis',
             'aaron', 'evan', 'seth', 'liam', 'mason', 'alexander', 'madison', 'paul', 'alfred', 'luis', 'robert', 'steve']
 
-names = list(set(names_male+names_female))
+pronouns = ['me', 'us', 'him', 'her', 'them']
+
+names = list(set(names_male + names_female))
 del names_male, names_female
 
 # ================================================================================================================
@@ -154,6 +156,7 @@ tasks_meet = []; tasks_meet_ = []
 
 #------------------------------------------GO----------------------------------------------
 if n_struct['go'][1]:
+
     tasks_go_.append(['go - go'])
     tasks_go_.append(['navigate - go'])
     tasks_go_.append(['proceed - go'])
@@ -231,12 +234,15 @@ if n_struct['go'][1]:
 
 #----------------------------------------TAKE---------------------------------------------
 if n_struct['take'][1]:
+
+    # take the object
     tasks_take_.append(['grasp the ' + objet + ' - take' for objet in objects])
     tasks_take_.append(['pick up the ' + objet + ' - take' for objet in objects])
 
     tasks_take_.append(['bring me the ' + objet + ' - take' for objet in objects])
     tasks_take_.append(['give me the ' + objet + ' - take' for objet in objects])
 
+    # take the object to the location/name
     tasks_take_.append(['take the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
     tasks_take_.append(['put the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
     tasks_take_.append(['deliver the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
@@ -314,35 +320,41 @@ if n_struct['take'][1]:
 
 #-----------------------------------------------FIND-----------------------------------------------
 if n_struct['find'][1]:
+
     tasks_find_.append(['find the ' + objet + ' - find' for objet in objects])
     tasks_find_.append(['look for the ' + objet + ' - find' for objet in objects])
     tasks_find_.append(['locate the ' + objet + ' - find' for objet in objects])
     tasks_find_.append(['pinpoint the ' + objet + ' - find' for objet in objects])
     tasks_find_.append(['spot the ' + objet + ' - find' for objet in objects])
+    tasks_find_.append(['search for the ' + objet + ' - find' for objet in objects])
 
     tasks_find_.append(['find the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
     tasks_find_.append(['look for the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
     tasks_find_.append(['locate the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
     tasks_find_.append(['pinpoint the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
     tasks_find_.append(['spot the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
+    tasks_find_.append(['search for the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
 
     tasks_find_.append(['find ' + name + ' - find' for name in names])
     tasks_find_.append(['look for ' + name + ' - find' for name in names])
     tasks_find_.append(['locate ' + name + ' - find' for name in names])
     tasks_find_.append(['pinpoint ' + name + ' - find' for name in names])
     tasks_find_.append(['spot ' + name + ' - find' for name in names])
+    tasks_find_.append(['search for ' + name + ' - find' for name in names])
 
     tasks_find_.append(['find ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
     tasks_find_.append(['look for ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
     tasks_find_.append(['locate ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
     tasks_find_.append(['pinpoint ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
     tasks_find_.append(['spot ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
+    tasks_find_.append(['search for ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
 
     tasks_find_.append(['find ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
     tasks_find_.append(['look for ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
     tasks_find_.append(['locate ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
     tasks_find_.append(['pinpoint ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
     tasks_find_.append(['spot ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
+    tasks_find_.append(['search for ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
 
     # ADDED SENTENCES FROM GPSR COMMAND GEN FOR ROBOCUP 2018
     # ===========================================================================================
@@ -352,6 +364,7 @@ if n_struct['find'][1]:
     tasks_find_.append(['find a person - find'])
     tasks_find_.append(['locate a person - find'])
     tasks_find_.append(['look for a person - find'])
+    tasks_find_.append(['search for a person - find'])
 
     tasks_find_.append(['find a person' + ' in the ' + location + ' - find' for location in locations_in])
     tasks_find_.append(['locate a person' + ' in the ' + location + ' - find' for location in locations_in])
@@ -359,6 +372,7 @@ if n_struct['find'][1]:
     tasks_find_.append(['find someone' + ' in the ' + location + ' - find' for location in locations_in])
     tasks_find_.append(['look for someone' + ' in the ' + location + ' - find' for location in locations_in])
     tasks_find_.append(['locate someone' + ' in the ' + location + ' - find' for location in locations_in])
+    tasks_find_.append(['search for someone' + ' in the ' + location + ' - find' for location in locations_in])
 
     # resampling and appending individual structures
     len_of_str = [len(tasks_find_[i]) for i in range(len(tasks_find_))]
@@ -376,6 +390,7 @@ if n_struct['find'][1]:
 
 #--------------------------------------------ANSWER-------------------------------------
 if n_struct['answer'][1]:
+
     tasks_answer_.append(['answer a question - answer'])
     tasks_answer_.append(['answer a question to ' + name + ' - answer' for name in names])
     tasks_answer_.append(['answer a question to ' + name + ' at the ' + location + ' - answer' for name in names for location in locations_at])
@@ -397,6 +412,7 @@ if n_struct['answer'][1]:
 
 #---------------------------------------------TELL-------------------------------------
 if n_struct['tell'][1]:
+
     tasks_tell_.append(['tell ' + w + ' to ' + name + ' - tell' for w in what_to_tell_to for name in names])
     tasks_tell_.append(['say ' + w + ' to ' + name + ' - tell' for w in what_to_tell_to for name in names])
     tasks_tell_.append(['tell ' + w + ' to ' + name + ' at the ' + location + ' - tell' for w in what_to_tell_to for name in names for location in locations_at])
@@ -430,6 +446,17 @@ if n_struct['tell'][1]:
 
 #---------------------------------------------GUIDE-------------------------------------
 if n_struct['guide'][1]:
+
+    tasks_guide_.append(['accompany ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['conduct ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['escort ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['guide ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['lead ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['take ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['oversee ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['supervise ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['usher ' + pronoun + ' - guide' for pronoun in pronouns])
+
     tasks_guide_.append(['accompany ' + name + ' - guide' for name in names])
     tasks_guide_.append(['conduct ' + name + ' - guide' for name in names])
     tasks_guide_.append(['escort ' + name + ' - guide' for name in names])
@@ -439,6 +466,16 @@ if n_struct['guide'][1]:
     tasks_guide_.append(['oversee ' + name + ' - guide' for name in names])
     tasks_guide_.append(['supervise ' + name + ' - guide' for name in names])
     tasks_guide_.append(['usher ' + name + ' - guide' for name in names])
+
+    tasks_guide_.append(['accompany ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['conduct ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['escort ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['guide ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['lead ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['take ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['oversee ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['supervise ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['usher ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
 
     tasks_guide_.append(['accompany ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
     tasks_guide_.append(['conduct ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
@@ -466,6 +503,15 @@ if n_struct['guide'][1]:
 
 #---------------------------------------------FOLLOW-------------------------------------
 if n_struct['follow'][1]:
+
+    tasks_follow_.append(['come after ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['go after ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['come behind ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['go behind ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['follow ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['pursue ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['chase ' + pronoun + ' - follow' for pronoun in pronouns])
+
     tasks_follow_.append(['come after ' + name + ' - follow' for name in names])
     tasks_follow_.append(['go after ' + name + ' - follow' for name in names])
     tasks_follow_.append(['come behind ' + name + ' - follow' for name in names])
@@ -473,6 +519,14 @@ if n_struct['follow'][1]:
     tasks_follow_.append(['follow ' + name + ' - follow' for name in names])
     tasks_follow_.append(['pursue ' + name + ' - follow' for name in names])
     tasks_follow_.append(['chase ' + name + ' - follow' for name in names])
+
+    tasks_follow_.append(['come after '  + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['go after ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['come behind ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['go behind ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['follow ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['pursue ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['chase ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
 
     tasks_follow_.append(['come after '  + name + ' to the ' + location + ' - follow' for name in names for location in locations])
     tasks_follow_.append(['go after ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
