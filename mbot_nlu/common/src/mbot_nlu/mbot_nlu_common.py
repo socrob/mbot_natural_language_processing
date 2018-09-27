@@ -14,9 +14,10 @@ import time
 import os
 import sys
 import yaml
+import inspect
 
 # load list of available intents from configuration file, add to list if your training data has more intents.
-available_intents = yaml.load(open('../../../../mbot_nlu_training/ros/config/config_mbot_nlu_training.yaml'))['test_params']['available_intents']
+available_intents = yaml.load(open(str(os.path.dirname(os.path.realpath(__file__))) + '/../../../../mbot_nlu_training/ros/config/config_mbot_nlu_training.yaml'))['test_params']['available_intents']
 
 
 class NaturalLanguageUnderstanding(object):
