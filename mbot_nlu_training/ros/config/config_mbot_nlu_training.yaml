@@ -6,7 +6,8 @@
 #===================
 test_params:
   # list of available intents, add to list if your training data has more intents.
-  available_intents: ['answer', 'find', 'follow', 'guide', 'take', 'tell', 'go', 'meet']
+  # available_intents: ['answer', 'find', 'follow', 'guide', 'take', 'tell', 'go', 'meet']
+  available_intents: ['find', 'follow', 'guide', 'take']
   test_choice: 'both'                                                                                    # which test to be executed, available options=['intent', 'slot', 'both']
   base_path: '../../../mbot_nlu_training/common/resources/wikipedia_vectors'                             # dic and wv path
   classifier_path: '../../../mbot_nlu_classifiers/common/classifiers/mithun_gpsr_robocup'                # classifier path
