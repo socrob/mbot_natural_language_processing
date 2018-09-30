@@ -10,7 +10,8 @@ CLASSIFIERS=(
     2 mithun_gpsr http://dantecloud.isr.tecnico.ulisboa.pt/index.php/s/Zo9c2DzaFArTLKE/download
     3 mithun_gpsr_robocup http://dantecloud.isr.tecnico.ulisboa.pt/index.php/s/RR8zzjm6ddPXFFE/download
     4 mithun_eegpsr_robocup http://dantecloud.isr.tecnico.ulisboa.pt/index.php/s/4ioQP2S5knbzNy5/download
-    #5 example exampleurl
+    5 mithun_erl_madrid http://dantecloud.isr.tecnico.ulisboa.pt/index.php/s/p2tiL7kBSZbE3Yk/download
+    #6 example exampleurl
 )
 
 # dir path of this file
