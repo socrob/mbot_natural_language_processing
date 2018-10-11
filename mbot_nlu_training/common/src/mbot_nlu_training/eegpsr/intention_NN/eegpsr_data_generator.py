@@ -5,6 +5,11 @@ import msgpack
 import numpy as np
 from sklearn.utils import resample
 
+
+# ################################################################################################################
+#                                                  PARAMETERS                                                    #
+# ################################################################################################################
+
 # load parameters from yaml
 # ================================================================================================================
 yaml_dict = yaml.load(open('../../../../../ros/config/config_mbot_nlu_training.yaml'))['intent_train']
@@ -14,6 +19,7 @@ random_state = eval(yaml_dict['resample_random_state'])
 # ================================================================================================================
 # number of types of different structured sentences in each of intent classes
 # structure: 'intent': (item_count, True/False).
+# True/False dictates if the sentences in this intent class will be included in the training data
 n_struct = {'go': (44, False), 'take': (52, True), 'find': (44, True), 'answer': (3, False), 'tell': (10, False), 'guide': (36, True), 'follow': (28, True), 'meet': (0, False)}
 
 # number of samples per structe required enough to make balances data
@@ -21,6 +27,11 @@ n_samples_per_intent = int(yaml_dict['n_examples']/len([item for item in n_struc
 # data slider. bigger the value, bigger the number of sentences with complex structures(eg: grasp to mia at the kitchen the bottle from the bed room)
 # but bigger the repeatation of sentences with smaller structure(eg: go to the kitchen)
 data_slider = yaml_dict['data_slider']
+
+
+# ################################################################################################################
+#                                           NOUNS (for sentence generation)                                      #
+# ################################################################################################################
 
 # data for creating sentences eg: [names, objects]
 # ================================================================================================================
@@ -126,20 +137,14 @@ what_to_tell_to = ["your teams affiliation", "your teams country", "your teams n
 intros = ['robot', 'please', 'could you please', 'robot please', 'robot could you please', 'can you', 'robot can you',  'could you', 'robot could you']
 
 
-# Prining number of objects used in the generator
-# print('obect_a', len(objects_a))
-# print('obect_an', len(objects_an))
-# print('objects_the', len(objects_the))
-# print('objects_some', len(objects_some))
-# print('objects_a_piece_of', len(objects_a_piece_of))
-# print('objects_a_cup_of', len(objects_a_cup_of))
-# print('objects_a_can_of', len(objects_a_can_of))
-# print('objects_a_glass_of', len(objects_a_glass_of))
-# print('objects_a_bottle_of', len(objects_a_bottle_of))
+# ################################################################################################################
+#                                                  USER FEEDBACK                                                 #
+# ################################################################################################################
+
+# printing number of objects used in the generator
 print('objects', len(objects))
 print('locations', len(sorted(locations, key=str.lower)))
-# print('names_female', len(names_female))
-# print('names_male', len(names_male))
+print('names', len(names))
 print('what_to_tell_about', len(what_to_tell_about))
 print('what_to_tell_to', len(what_to_tell_to))
 print('intros', len(intros))
@@ -153,6 +158,11 @@ tasks_guide = []; tasks_guide_ = []
 tasks_tell = []; tasks_tell_ = []
 tasks_go = []; tasks_go_ = []
 tasks_meet = []; tasks_meet_ = []
+
+
+# ################################################################################################################
+#                                         SENTENCE STRUCTURE DEFINISTIONS                                        #
+# ################################################################################################################
 
 #------------------------------------------GO----------------------------------------------
 if n_struct['go'][1]:
@@ -552,6 +562,12 @@ if n_struct['follow'][1]:
 
 print('-----------------------------------------------------')
 #----------------------------------------------------------------------------------------------
+
+
+# ################################################################################################################
+#                                                  RESAMPLING                                                    #
+# ################################################################################################################
+
 print('resampling and appending all the task sentences into one list')
 tasks = []
 if len(tasks_go)>1:
@@ -620,6 +636,12 @@ if len(tasks_guide)>1:
     del tasks_guide
 
 print('-----------------------------------------------------')
+
+
+# ################################################################################################################
+#                                           ADDING INTRO (eg: hello, robot)                                      #
+# ################################################################################################################
+
 # splitting inputs and labels and adding intros
 h = 0
 sentences = []
@@ -652,13 +674,23 @@ for v in range(len(tasks)):
     sentences.append(sentence)
     outputs.append(output)
 
-# Dumping the serialized inputs and outputs using pickle
+
+# ################################################################################################################
+#                                                  MSGPACK DUMP                                                  #
+# ################################################################################################################
+
+# Dumping the serialized inputs and outputs using msgpack
 with open('inputs', 'wb') as inputs_file:
     msgpack.dump(sentences, inputs_file)
 with open('outputs', 'wb') as outputs_file:
     msgpack.dump(outputs, outputs_file)
 
-# Take out the sentences which are longer than 15 words (The number is choosen by Pedro Martins, ref: mbot_nlu/ros/doc/pedro_thesis.pdf)
+
+# ################################################################################################################
+#                             WARN USER IF LEN(SENTNCE)>15 (why?: Check the comment below)                       #
+# ################################################################################################################
+
+# Take out the sentences which are longer than 15 words (This number was chose by Pedro Martins, ref: mbot_nlu/ros/doc/pedro_thesis.pdf)
 matches = []
 matches_lens = 0
 for sentence in sentences:
@@ -676,6 +708,12 @@ print('sentences with more than 15 words :')
 # Printing each sentence one row at a time
 for match in matches: print(match)
 print('-----------------------------------------------------')
+
+
+# ################################################################################################################
+#                                                  USER FEEDBACK                                                 #
+# ################################################################################################################
+
 print('number of sentences with more than 15 words', matches_lens)
 print('Total number of inputs', len(sentences))
 print('Total number of outputs', len(outputs))

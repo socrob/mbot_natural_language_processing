@@ -6,6 +6,11 @@ import msgpack
 import numpy as np
 from sklearn.utils import resample
 
+
+# ################################################################################################################
+#                                                  PARAMETERS                                                    #
+# ################################################################################################################
+
 # load parameters from yaml
 # ================================================================================================================
 yaml_dict = yaml.load(open('../../../../../ros/config/config_mbot_nlu_training.yaml'))['slots_train']
@@ -14,6 +19,7 @@ random_state = eval(yaml_dict['resample_random_state'])
 # params for balancing individual structures
 # ================================================================================================================
 # number of types of different structured sentences in each of intent classes
+# True/False dictates if the sentences in this intent class will be included in the training data
 n_struct = {'go': (45, False), 'take': (52, True), 'find': (44, True), 'answer': (2, False), 'tell': (11, False), 'guide': (18, True), 'follow': (14, True), 'meet': (0, False)}
 
 # number of samples per structe required enough to make balances data
@@ -21,6 +27,11 @@ n_samples_per_intent = int(yaml_dict['n_examples']/len([item for item in n_struc
 # data slider. bigger the value, bigger the number of sentences with complex structures(eg: grasp to mia at the kitchen the bottle from the bed room)
 # but bigger the repeatation of sentences with smaller structure(eg: go to the kitchen)
 data_slider = yaml_dict['data_slider']
+
+
+# ################################################################################################################
+#                                           NOUNS (for sentence generation)                                      #
+# ################################################################################################################
 
 # data for creating sentences eg: [names, objects]
 # ================================================================================================================
@@ -190,16 +201,13 @@ what_to_tell_to = [ "your -Bwhat_to_tell- teams -Iwhat_to_tell- affiliation -Iwh
 # ================================================================================================================
 intros = ['robot', 'hello robot', 'hello', 'please', 'could you please', 'robot please', 'can you', 'robot can you', 'robot could you', 'could you']
 
-# Prining number of objects used in the generator
-# print('obect_a', len(objects_a))
-# print('obect_an', len(objects_an))
-# print('objects_the', len(objects_the))
-# print('objects_some', len(objects_some))
-# print('objects_a_piece_of', len(objects_a_piece_of))
-# print('objects_a_cup_of', len(objects_a_cup_of))
-# print('objects_a_can_of', len(objects_a_can_of))
-# print('objects_a_glass_of', len(objects_a_glass_of))
-# print('objects_a_bottle_of', len(objects_a_bottle_of))
+
+# ################################################################################################################
+#                                                  USER FEEDBACK                                                 #
+# ################################################################################################################
+
+# printing number of objects used in the generator
+print('objects', len(objects))
 print('locations', len(sorted(locations, key=str.lower)))
 print('names', len(names))
 print('what_to_tell_to', len(what_to_tell_to))
@@ -214,6 +222,11 @@ tasks_guide = []; tasks_guide_ = []
 tasks_tell = []; tasks_tell_ = []
 tasks_go = []; tasks_go_ = []
 tasks_meet = []; tasks_meet_ = []
+
+
+# ################################################################################################################
+#                                         SENTENCE STRUCTURE DEFINISTIONS                                        #
+# ################################################################################################################
 
 #------------------------------------------GO----------------------------------------------
 if n_struct['go'][1]:
@@ -559,6 +572,12 @@ if n_struct['follow'][1]:
 
 print('-----------------------------------------------------')
 #----------------------------------------------------------------------------------------------
+
+
+# ################################################################################################################
+#                                                  RESAMPLING                                                    #
+# ################################################################################################################
+
 print('resampling and appending all the task sentences into one list')
 tasks = []
 if len(tasks_go)>1:
@@ -628,6 +647,11 @@ if len(tasks_guide)>1:
 
 print('-----------------------------------------------------')
 
+
+# ################################################################################################################
+#                                           ADDING INTRO (eg: hello, robot)                                      #
+# ################################################################################################################
+
 # Appending introductions (eg: "hello robot" , "could you please" etc.) and generating inputs and outputs
 c = 0
 sentences = []
@@ -677,6 +701,11 @@ for v in range(len(tasks)):
     sentences.append(sentence)
     outputs.append(output)
 
+
+# ################################################################################################################
+#                                                  MSGPACK DUMP                                                  #
+# ################################################################################################################
+
 # pickling inputs and labels
 with open('inputs_slot_filling', 'wb') as inputs_file:
     msgpack.dump(sentences, inputs_file)
@@ -684,9 +713,12 @@ with open('inputs_slot_filling', 'wb') as inputs_file:
 with open('outputs_slot_filling', 'wb') as outputs_file:
     msgpack.dump(outputs, outputs_file)
 
+
+# ################################################################################################################
+#                                                  USER FEEDBACK                                                 #
+# ################################################################################################################
+
 print('Total number of inputs', len(sentences))
 print('Total number of outputs', len(outputs))
-
 print('-----------------------------------------------------')
-
 print('Data generation is complete for Slots training, you may start the training by running training_nn_model.py script')
