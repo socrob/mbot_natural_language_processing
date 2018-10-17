@@ -3,6 +3,7 @@
 # apt installs
 debian_packagelist=(
     unzip
+    python-msgpack
 )
 
 # pip package list
