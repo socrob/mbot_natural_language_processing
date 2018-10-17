@@ -5,6 +5,11 @@ import msgpack
 import numpy as np
 from sklearn.utils import resample
 
+
+# ################################################################################################################
+#                                                  PARAMETERS                                                    #
+# ################################################################################################################
+
 # load parameters from yaml
 # ================================================================================================================
 yaml_dict = yaml.load(open('../../../../../ros/config/config_mbot_nlu_training.yaml'))['intent_train']
@@ -13,12 +18,20 @@ random_state = eval(yaml_dict['resample_random_state'])
 # params for balancing individual structures
 # ================================================================================================================
 # number of types of different structured sentences in each of intent classes
-n_struct = {'go': 44, 'take': 52, 'find': 37, 'answer': 3, 'tell': 10, 'guide': 7, 'follow': 5} #, 'meet': 0}
+# structure: 'intent': (item_count, True/False).
+# True/False dictates if the sentences in this intent class will be included in the training data
+n_struct = {'go': (44, False), 'take': (52, True), 'find': (44, True), 'answer': (3, False), 'tell': (10, False), 'guide': (36, True), 'follow': (28, True), 'meet': (0, False)}
+
 # number of samples per structe required enough to make balances data
-n_samples_per_intent = int(yaml_dict['n_examples']/len(n_struct))
+n_samples_per_intent = int(yaml_dict['n_examples']/len([item for item in n_struct.keys() if n_struct[item][0]!=0 and n_struct[item][1]]))
 # data slider. bigger the value, bigger the number of sentences with complex structures(eg: grasp to mia at the kitchen the bottle from the bed room)
 # but bigger the repeatation of sentences with smaller structure(eg: go to the kitchen)
 data_slider = yaml_dict['data_slider']
+
+
+# ################################################################################################################
+#                                           NOUNS (for sentence generation)                                      #
+# ################################################################################################################
 
 # data for creating sentences eg: [names, objects]
 # ================================================================================================================
@@ -63,6 +76,7 @@ objects_a_bottle_of = ['kleenex', 'milk', 'juice', 'whisky', 'rum', 'vodka', 'ci
                     'iced tea', 'water', 'beer', 'coke', 'sprite', 'wine','sake']
 
 objects = list(set(objects_a + objects_the + objects_some + objects_an + objects_a_piece_of + objects_a_cup_of + objects_a_can_of + objects_a_bottle_of + objects_a_glass_of))
+del objects_a, objects_some, objects_an, objects_a_piece_of, objects_a_cup_of, objects_a_can_of, objects_a_bottle_of, objects_a_glass_of
 # ================================================================================================================
 # locations
 # ================================================================================================================
@@ -89,7 +103,7 @@ locations_at = ['wardrobe', 'nightstand', 'bookshelf', 'coffee table', 'side tab
 locations = list(set(locations_at+locations_in+locations_on))
 
 # ================================================================================================================
-# names
+# names and pronouns
 # ================================================================================================================
 names_female = ['hanna', 'barbara', 'samantha', 'erika', 'sophie', 'jackie', 'skyler', 'jane', 'olivia', 'emily', 'amelia', 'lily',
                 'grace', 'ella', 'scarlett', 'isabelle', 'charlotte', 'daisy', 'sienna', 'chloe', 'alice', 'lucy', 'florence', 'rosie',
@@ -100,9 +114,12 @@ names_male = ['ken', 'erik', 'samuel', 'skyler', 'brian', 'thomas', 'edward', 'm
             'peter', 'oliver', 'jack', 'harry', 'henry', 'jacob', 'thomas', 'william', 'will', 'joshua', 'josh', 'noah', 'ethan', 'joseph',
             'samuel', 'daniel', 'max', 'logan', 'isaac', 'dylan', 'freddie', 'tyler', 'harrison', 'adam', 'theo', 'arthur', 'toby', 'luke',
             'lewis', 'matthew', 'harvey', 'ryan', 'tommy', 'michael', 'nathan', 'blake', 'charles', 'connor', 'jamie', 'elliot', 'louis',
-            'aaron', 'evan', 'seth', 'liam', 'mason', 'alexander', 'madison']
+            'aaron', 'evan', 'seth', 'liam', 'mason', 'alexander', 'madison', 'paul', 'alfred', 'luis', 'robert', 'steve']
 
-names = list(set(names_male+names_female))
+pronouns = ['me', 'us', 'him', 'her', 'them']
+
+names = list(set(names_male + names_female))
+del names_male, names_female
 
 # ================================================================================================================
 # what to tell
@@ -120,20 +137,14 @@ what_to_tell_to = ["your teams affiliation", "your teams country", "your teams n
 intros = ['robot', 'please', 'could you please', 'robot please', 'robot could you please', 'can you', 'robot can you',  'could you', 'robot could you']
 
 
-# Prining number of objects used in the generator
-print('obect_a', len(objects_a))
-print('obect_an', len(objects_an))
-print('objects_the', len(objects_the))
-print('objects_some', len(objects_some))
-print('objects_a_piece_of', len(objects_a_piece_of))
-print('objects_a_cup_of', len(objects_a_cup_of))
-print('objects_a_can_of', len(objects_a_can_of))
-print('objects_a_glass_of', len(objects_a_glass_of))
-print('objects_a_bottle_of', len(objects_a_bottle_of))
+# ################################################################################################################
+#                                                  USER FEEDBACK                                                 #
+# ################################################################################################################
+
+# printing number of objects used in the generator
 print('objects', len(objects))
 print('locations', len(sorted(locations, key=str.lower)))
-print('names_female', len(names_female))
-print('names_male', len(names_male))
+print('names', len(names))
 print('what_to_tell_about', len(what_to_tell_about))
 print('what_to_tell_to', len(what_to_tell_to))
 print('intros', len(intros))
@@ -148,345 +159,415 @@ tasks_tell = []; tasks_tell_ = []
 tasks_go = []; tasks_go_ = []
 tasks_meet = []; tasks_meet_ = []
 
+
+# ################################################################################################################
+#                                         SENTENCE STRUCTURE DEFINISTIONS                                        #
+# ################################################################################################################
+
 #------------------------------------------GO----------------------------------------------
-tasks_go_.append(['go - go'])
-tasks_go_.append(['navigate - go'])
-tasks_go_.append(['proceed - go'])
-tasks_go_.append(['move - go'])
-tasks_go_.append(['advance - go'])
-tasks_go_.append(['travel - go'])
-tasks_go_.append(['drive - go'])
-tasks_go_.append(['come - go'])
-tasks_go_.append(['go near - go'])
-tasks_go_.append(['walk - go'])
-tasks_go_.append(['enter - go'])
+if n_struct['go'][1]:
 
-tasks_go_.append(['go to ' + name + ' - go' for name in names])
-tasks_go_.append(['navigate to ' + name + ' - go' for name in names])
-tasks_go_.append(['proceed to ' + name + ' - go' for name in names])
-tasks_go_.append(['move to ' + name + ' - go' for name in names])
-tasks_go_.append(['advance to ' + name + ' - go' for name in names])
-tasks_go_.append(['travel to ' + name + ' - go' for name in names])
-tasks_go_.append(['drive to ' + name + ' - go' for name in names])
-tasks_go_.append(['come to ' + name + ' - go' for name in names])
-tasks_go_.append(['go near to ' + name + ' - go' for name in names])
-tasks_go_.append(['walk to ' + name + ' - go' for name in names])
-tasks_go_.append(['reach ' + name + ' - go' for name in names])
+    tasks_go_.append(['go - go'])
+    tasks_go_.append(['navigate - go'])
+    tasks_go_.append(['proceed - go'])
+    tasks_go_.append(['move - go'])
+    tasks_go_.append(['advance - go'])
+    tasks_go_.append(['travel - go'])
+    tasks_go_.append(['drive - go'])
+    tasks_go_.append(['come - go'])
+    tasks_go_.append(['go near - go'])
+    tasks_go_.append(['walk - go'])
+    tasks_go_.append(['enter - go'])
 
-tasks_go_.append(['go to the ' + location + ' - go' for location in locations])
-tasks_go_.append(['navigate to the ' + location + ' - go' for location in locations])
-tasks_go_.append(['proceed to the ' + location + ' - go' for location in locations])
-tasks_go_.append(['move to the ' + location + ' - go' for location in locations])
-tasks_go_.append(['advance to the ' + location + ' - go' for location in locations])
-tasks_go_.append(['travel to the ' + location + ' - go' for location in locations])
-tasks_go_.append(['drive to the ' + location + ' - go' for location in locations])
-tasks_go_.append(['come to the ' + location + ' - go' for location in locations])
-tasks_go_.append(['go near the ' + location + ' - go' for location in locations])
-tasks_go_.append(['walk to the ' + location + ' - go' for location in locations])
-tasks_go_.append(['reach the ' + location + ' - go' for location in locations])
-tasks_go_.append(['enter the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['go to ' + name + ' - go' for name in names])
+    tasks_go_.append(['navigate to ' + name + ' - go' for name in names])
+    tasks_go_.append(['proceed to ' + name + ' - go' for name in names])
+    tasks_go_.append(['move to ' + name + ' - go' for name in names])
+    tasks_go_.append(['advance to ' + name + ' - go' for name in names])
+    tasks_go_.append(['travel to ' + name + ' - go' for name in names])
+    tasks_go_.append(['drive to ' + name + ' - go' for name in names])
+    tasks_go_.append(['come to ' + name + ' - go' for name in names])
+    tasks_go_.append(['go near to ' + name + ' - go' for name in names])
+    tasks_go_.append(['walk to ' + name + ' - go' for name in names])
+    tasks_go_.append(['reach ' + name + ' - go' for name in names])
 
-tasks_go_.append(['go to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
-tasks_go_.append(['navigate to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
-tasks_go_.append(['proceed to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
-tasks_go_.append(['move to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
-tasks_go_.append(['advance to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
-tasks_go_.append(['travel to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
-tasks_go_.append(['drive to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
-tasks_go_.append(['come to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
-tasks_go_.append(['go near ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
-tasks_go_.append(['walk to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
-tasks_go_.append(['reach ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['go to the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['navigate to the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['proceed to the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['move to the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['advance to the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['travel to the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['drive to the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['come to the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['go near the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['walk to the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['reach the ' + location + ' - go' for location in locations])
+    tasks_go_.append(['enter the ' + location + ' - go' for location in locations])
 
-tasks_go_.append(['go to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
-tasks_go_.append(['navigate to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
-tasks_go_.append(['proceed to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
-tasks_go_.append(['move to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
-tasks_go_.append(['advance to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
-tasks_go_.append(['travel to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
-tasks_go_.append(['drive to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
-tasks_go_.append(['come to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
-tasks_go_.append(['go near ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
-tasks_go_.append(['walk to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
-tasks_go_.append(['reach ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['go to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['navigate to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['proceed to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['move to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['advance to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['travel to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['drive to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['come to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['go near ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['walk to ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
+    tasks_go_.append(['reach ' + name + ' at the ' + location + ' - go' for name in names for location in locations_at])
 
-# resampling and appending individual structures
-len_of_str = [len(tasks_go_[i]) for i in range(len(tasks_go_))]
-mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
-for i in range(len(tasks_go_)):
-    # resample if len not enough or more
-    if len_of_str[i]!=mean_of_strct_lens:
-        try: tasks_go_[i] = resample(tasks_go_[i], n_samples=mean_of_strct_lens, replace=False)
-        except:  tasks_go_[i] = resample(tasks_go_[i], n_samples=mean_of_strct_lens, replace=True)
-# flat list
-tasks_go = [item for sublist in tasks_go_ for item in sublist]
-# rem temp params
-del tasks_go_, len_of_str, mean_of_strct_lens
-print ("number of 'go' sentences", len(tasks_go))
+    tasks_go_.append(['go to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['navigate to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['proceed to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['move to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['advance to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['travel to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['drive to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['come to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['go near ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['walk to ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+    tasks_go_.append(['reach ' + name + ' in the ' + location + ' - go' for name in names for location in locations_in])
+
+    # resampling and appending individual structures
+    len_of_str = [len(tasks_go_[i]) for i in range(len(tasks_go_))]
+    mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
+    for i in range(len(tasks_go_)):
+        # resample if len not enough or more
+        if len_of_str[i]!=mean_of_strct_lens:
+            try: tasks_go_[i] = resample(tasks_go_[i], n_samples=mean_of_strct_lens, replace=False)
+            except:  tasks_go_[i] = resample(tasks_go_[i], n_samples=mean_of_strct_lens, replace=True)
+    # flat list
+    tasks_go = [item for sublist in tasks_go_ for item in sublist]
+    # rem temp params
+    del tasks_go_, len_of_str, mean_of_strct_lens
+    print ("number of 'go' sentences", len(tasks_go))
 
 #----------------------------------------TAKE---------------------------------------------
-tasks_take_.append(['grasp the ' + objet + ' - take' for objet in objects])
-tasks_take_.append(['pick up the ' + objet + ' - take' for objet in objects])
+if n_struct['take'][1]:
 
-tasks_take_.append(['bring me the ' + objet + ' - take' for objet in objects])
-tasks_take_.append(['give me the ' + objet + ' - take' for objet in objects])
+    # take the object
+    tasks_take_.append(['grasp the ' + objet + ' - take' for objet in objects])
+    tasks_take_.append(['pick up the ' + objet + ' - take' for objet in objects])
 
-tasks_take_.append(['take the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
-tasks_take_.append(['put the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
-tasks_take_.append(['deliver the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
+    tasks_take_.append(['bring me the ' + objet + ' - take' for objet in objects])
+    tasks_take_.append(['give me the ' + objet + ' - take' for objet in objects])
 
-tasks_take_.append(['take the ' + objet + ' to ' + name + ' - take' for objet in objects for name in names])
-tasks_take_.append(['deliver the ' + objet + ' to ' + name + ' - take' for objet in objects for name in names])
-tasks_take_.append(['give the ' + objet + ' to ' + name + ' - take' for objet in objects for name in names])
+    # take the object to the location/name
+    tasks_take_.append(['take the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
+    tasks_take_.append(['put the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
+    tasks_take_.append(['deliver the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
 
-# ADDED SENTENCES FROM GPSR COMMAND GEN FOR ROBOCUP 2018
-# ===========================================================================================
-tasks_take_.append(['grasp the ' + objet + ' from the ' + location + ' - take' for objet in objects for location in locations])
-tasks_take_.append(['pick up the ' + objet + ' from the ' + location + ' - take' for objet in objects for location in locations])
+    tasks_take_.append(['take the ' + objet + ' to ' + name + ' - take' for objet in objects for name in names])
+    tasks_take_.append(['deliver the ' + objet + ' to ' + name + ' - take' for objet in objects for name in names])
+    tasks_take_.append(['give the ' + objet + ' to ' + name + ' - take' for objet in objects for name in names])
 
-tasks_take_.append(['bring the ' + objet + ' to ' + name + ' - take' for objet in objects_the for name in names])
+    # ADDED SENTENCES FROM GPSR COMMAND GEN FOR ROBOCUP 2018
+    # ===========================================================================================
+    tasks_take_.append(['grasp the ' + objet + ' from the ' + location + ' - take' for objet in objects for location in locations])
+    tasks_take_.append(['pick up the ' + objet + ' from the ' + location + ' - take' for objet in objects for location in locations])
 
-tasks_take_.append(['bring me the ' + objet + ' from the ' + location + ' - take' for objet in objects_the for location in locations])
-tasks_take_.append(['give me the ' + objet + ' from the ' + location + ' - take' for objet in objects_the for location in locations])
+    tasks_take_.append(['bring the ' + objet + ' to ' + name + ' - take' for objet in objects_the for name in names])
 
-tasks_take_.append(['bring the ' + objet + ' to ' + name + ' at the ' + location + ' - take' for objet in objects_the for name in names for location in locations])
+    tasks_take_.append(['bring me the ' + objet + ' from the ' + location + ' - take' for objet in objects_the for location in locations])
+    tasks_take_.append(['give me the ' + objet + ' from the ' + location + ' - take' for objet in objects_the for location in locations])
 
-tasks_take_.append(['bring the ' + objet + ' to me - take' for objet in objects_the])
-tasks_take_.append(['deliver the ' + objet + ' to me - take' for objet in objects_the])
-tasks_take_.append(['give the ' + objet + ' to me - take' for objet in objects_the])
-tasks_take_.append(['hand the ' + objet + ' to me - take' for objet in objects_the])
-tasks_take_.append(['hand over the ' + objet + ' to me - take' for objet in objects_the])
+    tasks_take_.append(['bring the ' + objet + ' to ' + name + ' at the ' + location + ' - take' for objet in objects_the for name in names for location in locations])
 
-tasks_take_.append(['deliver the ' + objet + ' to ' + name + ' at the ' + location + ' - take' for objet in objects_the for name in names for location in locations_at])
-tasks_take_.append(['give the ' + objet + ' to ' + name + ' at the ' + location + ' - take' for objet in objects_the for name in names for location in locations_at])
-tasks_take_.append(['hand the ' + objet + ' to ' + name + ' at the ' + location + ' - take' for objet in objects_the for name in names for location in locations_at])
-tasks_take_.append(['hand over the ' + objet + ' to ' + name + ' at the ' + location + ' - take' for objet in objects_the for name in names for location in locations_at])
+    tasks_take_.append(['bring the ' + objet + ' to me - take' for objet in objects_the])
+    tasks_take_.append(['deliver the ' + objet + ' to me - take' for objet in objects_the])
+    tasks_take_.append(['give the ' + objet + ' to me - take' for objet in objects_the])
+    tasks_take_.append(['hand the ' + objet + ' to me - take' for objet in objects_the])
+    tasks_take_.append(['hand over the ' + objet + ' to me - take' for objet in objects_the])
 
-tasks_take_.append(['bring to ' + name + ' at the ' + location + ' the ' + objet + ' from the ' + location2 + ' - take' for name in names for location in locations_at[:int(len(locations_at)/2)] for objet in objects_the for location2 in locations[:int(len(locations)/4)] if location!=location2])
-tasks_take_.append(['give to ' + name + ' at the ' + location + ' the ' + objet + ' from the ' + location2 + ' - take' for name in names for location in locations_at[:int(len(locations_at)/2)] for objet in objects_the for location2 in locations[:int(len(locations)/4)] if location!=location2])
+    tasks_take_.append(['deliver the ' + objet + ' to ' + name + ' at the ' + location + ' - take' for objet in objects_the for name in names for location in locations_at])
+    tasks_take_.append(['give the ' + objet + ' to ' + name + ' at the ' + location + ' - take' for objet in objects_the for name in names for location in locations_at])
+    tasks_take_.append(['hand the ' + objet + ' to ' + name + ' at the ' + location + ' - take' for objet in objects_the for name in names for location in locations_at])
+    tasks_take_.append(['hand over the ' + objet + ' to ' + name + ' at the ' + location + ' - take' for objet in objects_the for name in names for location in locations_at])
 
-tasks_take_.append(['deliver the ' + objet + ' to ' + name + ' - take' for objet in objects_the for name in names])
+    tasks_take_.append(['bring to ' + name + ' at the ' + location + ' the ' + objet + ' from the ' + location2 + ' - take' for name in names for location in locations_at[:int(len(locations_at)/2)] for objet in objects_the for location2 in locations[:int(len(locations)/8)] if location!=location2])
+    tasks_take_.append(['give to ' + name + ' at the ' + location + ' the ' + objet + ' from the ' + location2 + ' - take' for name in names for location in locations_at[:int(len(locations_at)/2)] for objet in objects_the for location2 in locations[:int(len(locations)/8)] if location!=location2])
 
-tasks_take_.append(['get the ' + objet + ' from the ' + location + ' - take' for objet in objects_the for location in locations])
-tasks_take_.append(['get the ' + objet + ' to the ' + location + ' - take' for objet in objects_the for location in locations])
-tasks_take_.append(['take the ' + objet + ' from the ' + location + ' - take' for objet in objects_the for location in locations])
-tasks_take_.append(['retrieve the ' + objet + ' from the ' + location + ' - take' for objet in objects_the for location in locations])
+    tasks_take_.append(['deliver the ' + objet + ' to ' + name + ' - take' for objet in objects_the for name in names])
 
-tasks_take_.append(['get the ' + objet + ' from the ' + location + ' to the ' + location2 + ' - take' for objet in objects_the for location in locations[:int(len(locations)/4)] for location2 in locations[:int(len(locations)/4)] if location!=location2])
-tasks_take_.append(['take the ' + objet + ' from the ' + location + ' to the ' + location2 + ' - take' for objet in objects_the for location in locations[:int(len(locations)/4)] for location2 in locations[:int(len(locations)/4)] if location!=location2])
+    tasks_take_.append(['get the ' + objet + ' from the ' + location + ' - take' for objet in objects_the for location in locations])
+    tasks_take_.append(['get the ' + objet + ' to the ' + location + ' - take' for objet in objects_the for location in locations])
+    tasks_take_.append(['take the ' + objet + ' from the ' + location + ' - take' for objet in objects_the for location in locations])
+    tasks_take_.append(['retrieve the ' + objet + ' from the ' + location + ' - take' for objet in objects_the for location in locations])
 
-tasks_take_.append(['place the ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
-tasks_take_.append(['place ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
-tasks_take_.append(['put the ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
-tasks_take_.append(['put ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
-tasks_take_.append(['set the ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
-tasks_take_.append(['set ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
-tasks_take_.append(['leave the ' + objet + ' on the ' + location + ' - take' for objet in objects for location in locations_on])
-tasks_take_.append(['leave ' + objet + ' on the ' + location + ' - take' for objet in objects for location in locations_on])
+    tasks_take_.append(['get the ' + objet + ' from the ' + location + ' to the ' + location2 + ' - take' for objet in objects_the for location in locations[:int(len(locations)/8)] for location2 in locations[:int(len(locations)/8)] if location!=location2])
+    tasks_take_.append(['take the ' + objet + ' from the ' + location + ' to the ' + location2 + ' - take' for objet in objects_the for location in locations[:int(len(locations)/8)] for location2 in locations[:int(len(locations)/8)] if location!=location2])
 
-# CHANGED FROM GRASP TO TAKE ACCORDING TO ME
-# ===========================================================================================
-tasks_take_.append(['grasp the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
-tasks_take_.append(['pick up the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
+    tasks_take_.append(['place the ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
+    tasks_take_.append(['place ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
+    tasks_take_.append(['put the ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
+    tasks_take_.append(['put ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
+    tasks_take_.append(['set the ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
+    tasks_take_.append(['set ' + objet + ' on the ' + location + ' - take' for objet in objects_the for location in locations_on])
+    tasks_take_.append(['leave the ' + objet + ' on the ' + location + ' - take' for objet in objects for location in locations_on])
+    tasks_take_.append(['leave ' + objet + ' on the ' + location + ' - take' for objet in objects for location in locations_on])
 
-tasks_take_.append(['grasp the ' + objet + ' from the ' + location + ' to the ' + location2 + ' - take' for objet in objects for location in locations[:int(len(locations)/4)] for location2 in locations[:int(len(locations)/4)] if location!=location2])
-tasks_take_.append(['pick up the ' + objet + ' from the ' + location + ' to the ' + location2 + ' - take' for objet in objects for location in locations[:int(len(locations)/4)] for location2 in locations[:int(len(locations)/4)] if location!=location2])
+    # CHANGED FROM GRASP TO TAKE ACCORDING TO ME
+    # ===========================================================================================
+    tasks_take_.append(['grasp the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
+    tasks_take_.append(['pick up the ' + objet + ' to the ' + location + ' - take' for objet in objects for location in locations])
 
-# resampling and appending individual structures
-len_of_str = [len(tasks_take_[i]) for i in range(len(tasks_take_))]
-mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
-for i in range(len(tasks_take_)):
-    # resample if len not enough or more
-    if len_of_str[i]!=mean_of_strct_lens:
-        try: tasks_take_[i] = resample(tasks_take_[i], n_samples=mean_of_strct_lens, replace=False)
-        except: tasks_take_[i] = resample(tasks_take_[i], n_samples=mean_of_strct_lens, replace=True)
-# flat list
-tasks_take = [item for sublist in tasks_take_ for item in sublist]
-# rem temp params
-del tasks_take_, len_of_str, mean_of_strct_lens
-print ("number of 'take' sentences", len(tasks_take))
+    tasks_take_.append(['grasp the ' + objet + ' from the ' + location + ' to the ' + location2 + ' - take' for objet in objects for location in locations[:int(len(locations)/8)] for location2 in locations[:int(len(locations)/8)] if location!=location2])
+    tasks_take_.append(['pick up the ' + objet + ' from the ' + location + ' to the ' + location2 + ' - take' for objet in objects for location in locations[:int(len(locations)/8)] for location2 in locations[:int(len(locations)/8)] if location!=location2])
+
+    # resampling and appending individual structures
+    len_of_str = [len(tasks_take_[i]) for i in range(len(tasks_take_))]
+    mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
+    for i in range(len(tasks_take_)):
+        # resample if len not enough or more
+        if len_of_str[i]!=mean_of_strct_lens:
+            try: tasks_take_[i] = resample(tasks_take_[i], n_samples=mean_of_strct_lens, replace=False)
+            except: tasks_take_[i] = resample(tasks_take_[i], n_samples=mean_of_strct_lens, replace=True)
+    # flat list
+    tasks_take = [item for sublist in tasks_take_ for item in sublist]
+    # rem temp params
+    del tasks_take_, len_of_str, mean_of_strct_lens
+    print ("number of 'take' sentences", len(tasks_take))
 
 #-----------------------------------------------FIND-----------------------------------------------
-tasks_find_.append(['find the ' + objet + ' - find' for objet in objects])
-tasks_find_.append(['look for the ' + objet + ' - find' for objet in objects])
-tasks_find_.append(['locate the ' + objet + ' - find' for objet in objects])
-tasks_find_.append(['pinpoint the ' + objet + ' - find' for objet in objects])
-tasks_find_.append(['spot the ' + objet + ' - find' for objet in objects])
+if n_struct['find'][1]:
 
-tasks_find_.append(['find the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
-tasks_find_.append(['look for the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
-tasks_find_.append(['locate the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
-tasks_find_.append(['pinpoint the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
-tasks_find_.append(['spot the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
+    tasks_find_.append(['find the ' + objet + ' - find' for objet in objects])
+    tasks_find_.append(['look for the ' + objet + ' - find' for objet in objects])
+    tasks_find_.append(['locate the ' + objet + ' - find' for objet in objects])
+    tasks_find_.append(['pinpoint the ' + objet + ' - find' for objet in objects])
+    tasks_find_.append(['spot the ' + objet + ' - find' for objet in objects])
+    tasks_find_.append(['search for the ' + objet + ' - find' for objet in objects])
 
-tasks_find_.append(['find ' + name + ' - find' for name in names])
-tasks_find_.append(['look for ' + name + ' - find' for name in names])
-tasks_find_.append(['locate ' + name + ' - find' for name in names])
-tasks_find_.append(['pinpoint ' + name + ' - find' for name in names])
-tasks_find_.append(['spot ' + name + ' - find' for name in names])
+    tasks_find_.append(['find the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
+    tasks_find_.append(['look for the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
+    tasks_find_.append(['locate the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
+    tasks_find_.append(['pinpoint the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
+    tasks_find_.append(['spot the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
+    tasks_find_.append(['search for the ' + objet + ' in the ' + location + ' - find' for objet in objects for location in locations_in])
 
-tasks_find_.append(['find ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
-tasks_find_.append(['look for ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
-tasks_find_.append(['locate ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
-tasks_find_.append(['pinpoint ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
-tasks_find_.append(['spot ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
+    tasks_find_.append(['find ' + name + ' - find' for name in names])
+    tasks_find_.append(['look for ' + name + ' - find' for name in names])
+    tasks_find_.append(['locate ' + name + ' - find' for name in names])
+    tasks_find_.append(['pinpoint ' + name + ' - find' for name in names])
+    tasks_find_.append(['spot ' + name + ' - find' for name in names])
+    tasks_find_.append(['search for ' + name + ' - find' for name in names])
 
-tasks_find_.append(['find ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
-tasks_find_.append(['look for ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
-tasks_find_.append(['locate ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
-tasks_find_.append(['pinpoint ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
-tasks_find_.append(['spot ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
+    tasks_find_.append(['find ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
+    tasks_find_.append(['look for ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
+    tasks_find_.append(['locate ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
+    tasks_find_.append(['pinpoint ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
+    tasks_find_.append(['spot ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
+    tasks_find_.append(['search for ' + name + ' in the ' + location + ' - find' for name in names for location in locations_in])
 
-# ADDED SENTENCES FROM GPSR COMMAND GEN FOR ROBOCUP 2018
-# ===========================================================================================
-tasks_find_.append(['find someone - find'])
-tasks_find_.append(['locate someone - find'])
-tasks_find_.append(['look for someone - find'])
-tasks_find_.append(['find a person - find'])
-tasks_find_.append(['locate a person - find'])
-tasks_find_.append(['look for a person - find'])
+    tasks_find_.append(['find ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
+    tasks_find_.append(['look for ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
+    tasks_find_.append(['locate ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
+    tasks_find_.append(['pinpoint ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
+    tasks_find_.append(['spot ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
+    tasks_find_.append(['search for ' + name + ' at the ' + location + ' - find' for name in names for location in locations_at])
 
-tasks_find_.append(['find a person' + ' in the ' + location + ' - find' for location in locations_in])
-tasks_find_.append(['locate a person' + ' in the ' + location + ' - find' for location in locations_in])
-tasks_find_.append(['look for a person' + ' in the ' + location + ' - find' for location in locations_in])
-tasks_find_.append(['find someone' + ' in the ' + location + ' - find' for location in locations_in])
-tasks_find_.append(['look for someone' + ' in the ' + location + ' - find' for location in locations_in])
-tasks_find_.append(['locate someone' + ' in the ' + location + ' - find' for location in locations_in])
+    # ADDED SENTENCES FROM GPSR COMMAND GEN FOR ROBOCUP 2018
+    # ===========================================================================================
+    tasks_find_.append(['find someone - find'])
+    tasks_find_.append(['locate someone - find'])
+    tasks_find_.append(['look for someone - find'])
+    tasks_find_.append(['find a person - find'])
+    tasks_find_.append(['locate a person - find'])
+    tasks_find_.append(['look for a person - find'])
+    tasks_find_.append(['search for a person - find'])
 
-# resampling and appending individual structures
-len_of_str = [len(tasks_find_[i]) for i in range(len(tasks_find_))]
-mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
-for i in range(len(tasks_find_)):
-    # resample if len not enough or more
-    if len_of_str[i]!=mean_of_strct_lens:
-        try: tasks_find_[i] = resample(tasks_find_[i], n_samples=mean_of_strct_lens, replace=False)
-        except: tasks_find_[i] = resample(tasks_find_[i], n_samples=mean_of_strct_lens, replace=True)
-# flat list
-tasks_find = [item for sublist in tasks_find_ for item in sublist]
-# rem temp params
-del tasks_find_, len_of_str, mean_of_strct_lens
-print ("number of 'find' sentences", len(tasks_find))
+    tasks_find_.append(['find a person' + ' in the ' + location + ' - find' for location in locations_in])
+    tasks_find_.append(['locate a person' + ' in the ' + location + ' - find' for location in locations_in])
+    tasks_find_.append(['look for a person' + ' in the ' + location + ' - find' for location in locations_in])
+    tasks_find_.append(['find someone' + ' in the ' + location + ' - find' for location in locations_in])
+    tasks_find_.append(['look for someone' + ' in the ' + location + ' - find' for location in locations_in])
+    tasks_find_.append(['locate someone' + ' in the ' + location + ' - find' for location in locations_in])
+    tasks_find_.append(['search for someone' + ' in the ' + location + ' - find' for location in locations_in])
+
+    # resampling and appending individual structures
+    len_of_str = [len(tasks_find_[i]) for i in range(len(tasks_find_))]
+    mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
+    for i in range(len(tasks_find_)):
+        # resample if len not enough or more
+        if len_of_str[i]!=mean_of_strct_lens:
+            try: tasks_find_[i] = resample(tasks_find_[i], n_samples=mean_of_strct_lens, replace=False)
+            except: tasks_find_[i] = resample(tasks_find_[i], n_samples=mean_of_strct_lens, replace=True)
+    # flat list
+    tasks_find = [item for sublist in tasks_find_ for item in sublist]
+    # rem temp params
+    del tasks_find_, len_of_str, mean_of_strct_lens
+    print ("number of 'find' sentences", len(tasks_find))
 
 #--------------------------------------------ANSWER-------------------------------------
-tasks_answer_.append(['answer a question - answer'])
-tasks_answer_.append(['answer a question to ' + name + ' - answer' for name in names])
-tasks_answer_.append(['answer a question to ' + name + ' at the ' + location + ' - answer' for name in names for location in locations_at])
-tasks_answer_.append(['answer a question to ' + name + ' in the ' + location + ' - answer' for name in names for location in locations_in])
+if n_struct['answer'][1]:
 
-# resampling and appending individual structures
-len_of_str = [len(tasks_answer_[i]) for i in range(len(tasks_answer_))]
-mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
-for i in range(len(tasks_answer_)):
-    # resample if len not enough or more
-    if len_of_str[i]!=mean_of_strct_lens:
-        try: tasks_answer_[i] = resample(tasks_answer_[i], n_samples=mean_of_strct_lens, replace=False)
-        except: tasks_answer_[i] = resample(tasks_answer_[i], n_samples=mean_of_strct_lens, replace=True)
-# flat list
-tasks_answer = [item for sublist in tasks_answer_ for item in sublist]
-# rem temp params
-del tasks_answer_, len_of_str, mean_of_strct_lens
-print ("number of 'answer' sentences", len(tasks_answer))
+    tasks_answer_.append(['answer a question - answer'])
+    tasks_answer_.append(['answer a question to ' + name + ' - answer' for name in names])
+    tasks_answer_.append(['answer a question to ' + name + ' at the ' + location + ' - answer' for name in names for location in locations_at])
+    tasks_answer_.append(['answer a question to ' + name + ' in the ' + location + ' - answer' for name in names for location in locations_in])
+
+    # resampling and appending individual structures
+    len_of_str = [len(tasks_answer_[i]) for i in range(len(tasks_answer_))]
+    mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
+    for i in range(len(tasks_answer_)):
+        # resample if len not enough or more
+        if len_of_str[i]!=mean_of_strct_lens:
+            try: tasks_answer_[i] = resample(tasks_answer_[i], n_samples=mean_of_strct_lens, replace=False)
+            except: tasks_answer_[i] = resample(tasks_answer_[i], n_samples=mean_of_strct_lens, replace=True)
+    # flat list
+    tasks_answer = [item for sublist in tasks_answer_ for item in sublist]
+    # rem temp params
+    del tasks_answer_, len_of_str, mean_of_strct_lens
+    print ("number of 'answer' sentences", len(tasks_answer))
 
 #---------------------------------------------TELL-------------------------------------
-tasks_tell_.append(['tell ' + w + ' to ' + name + ' - tell' for w in what_to_tell_to for name in names])
-tasks_tell_.append(['say ' + w + ' to ' + name + ' - tell' for w in what_to_tell_to for name in names])
-tasks_tell_.append(['tell ' + w + ' to ' + name + ' at the ' + location + ' - tell' for w in what_to_tell_to for name in names for location in locations_at])
-tasks_tell_.append(['say ' + w + ' to ' + name + ' at the ' + location + ' - tell' for w in what_to_tell_to for name in names for location in locations_at])
-tasks_tell_.append(['tell ' + w + ' to ' + name + ' in the ' + location + ' - tell' for w in what_to_tell_to for name in names for location in locations_in])
-tasks_tell_.append(['say ' + w + ' to ' + name + ' in the ' + location + ' - tell' for w in what_to_tell_to for name in names for location in locations_in])
+if n_struct['tell'][1]:
 
-# ADDED SENTENCES FROM GPSR COMMAND GEN FOR ROBOCUP 2018
-# ===========================================================================================
-tasks_tell_.append(['say ' + w + ' - tell' for w in what_to_tell_to])
-tasks_tell_.append(['tell ' + w + ' - tell' for w in what_to_tell_to])
-tasks_tell_.append(['tell me ' + w + ' - tell' for w in what_to_tell_to])
+    tasks_tell_.append(['tell ' + w + ' to ' + name + ' - tell' for w in what_to_tell_to for name in names])
+    tasks_tell_.append(['say ' + w + ' to ' + name + ' - tell' for w in what_to_tell_to for name in names])
+    tasks_tell_.append(['tell ' + w + ' to ' + name + ' at the ' + location + ' - tell' for w in what_to_tell_to for name in names for location in locations_at])
+    tasks_tell_.append(['say ' + w + ' to ' + name + ' at the ' + location + ' - tell' for w in what_to_tell_to for name in names for location in locations_at])
+    tasks_tell_.append(['tell ' + w + ' to ' + name + ' in the ' + location + ' - tell' for w in what_to_tell_to for name in names for location in locations_in])
+    tasks_tell_.append(['say ' + w + ' to ' + name + ' in the ' + location + ' - tell' for w in what_to_tell_to for name in names for location in locations_in])
 
-tasks_tell_.append(['tell me the name of the person at the ' + location + ' - tell' for location in locations_at])
-tasks_tell_.append(['tell me the name of the person in the ' + location + ' - tell' for location in locations_in])
-tasks_tell_.append(['tell me how many ' + objet + ' there are on the ' + location + ' - tell' for objet in objects for location in locations_on])
+    # ADDED SENTENCES FROM GPSR COMMAND GEN FOR ROBOCUP 2018
+    # ===========================================================================================
+    tasks_tell_.append(['say ' + w + ' - tell' for w in what_to_tell_to])
+    tasks_tell_.append(['tell ' + w + ' - tell' for w in what_to_tell_to])
+    tasks_tell_.append(['tell me ' + w + ' - tell' for w in what_to_tell_to])
 
-# resampling and appending individual structures
-len_of_str = [len(tasks_tell_[i]) for i in range(len(tasks_tell_))]
-mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
-for i in range(len(tasks_tell_)):
-    # resample if len not enough or more
-    if len_of_str[i]!=mean_of_strct_lens:
-        try: tasks_tell_[i] = resample(tasks_tell_[i], n_samples=mean_of_strct_lens, replace=False)
-        except: tasks_tell_[i] = resample(tasks_tell_[i], n_samples=mean_of_strct_lens, replace=True)
-# flat list
-tasks_tell = [item for sublist in tasks_tell_ for item in sublist]
-# rem temp params
-del tasks_tell_, len_of_str, mean_of_strct_lens
-print ("number of 'tell' sentences", len(tasks_tell))
+    tasks_tell_.append(['tell me the name of the person at the ' + location + ' - tell' for location in locations_at])
+    tasks_tell_.append(['tell me the name of the person in the ' + location + ' - tell' for location in locations_in])
+    tasks_tell_.append(['tell me how many ' + objet + ' there are on the ' + location + ' - tell' for objet in objects for location in locations_on])
+
+    # resampling and appending individual structures
+    len_of_str = [len(tasks_tell_[i]) for i in range(len(tasks_tell_))]
+    mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
+    for i in range(len(tasks_tell_)):
+        # resample if len not enough or more
+        if len_of_str[i]!=mean_of_strct_lens:
+            try: tasks_tell_[i] = resample(tasks_tell_[i], n_samples=mean_of_strct_lens, replace=False)
+            except: tasks_tell_[i] = resample(tasks_tell_[i], n_samples=mean_of_strct_lens, replace=True)
+    # flat list
+    tasks_tell = [item for sublist in tasks_tell_ for item in sublist]
+    # rem temp params
+    del tasks_tell_, len_of_str, mean_of_strct_lens
+    print ("number of 'tell' sentences", len(tasks_tell))
 
 #---------------------------------------------GUIDE-------------------------------------
-tasks_guide_.append(['accompany ' + name + ' - guide' for name in names])
-tasks_guide_.append(['conduct ' + name + ' - guide' for name in names])
-tasks_guide_.append(['escort ' + name + ' - guide' for name in names])
-tasks_guide_.append(['guide ' + name + ' - guide' for name in names])
-tasks_guide_.append(['lead ' + name + ' - guide' for name in names])
-tasks_guide_.append(['take ' + name + ' - guide' for name in names])
-tasks_guide_.append(['oversee ' + name + ' - guide' for name in names])
-tasks_guide_.append(['supervise ' + name + ' - guide' for name in names])
-tasks_guide_.append(['usher ' + name + ' - guide' for name in names])
+if n_struct['guide'][1]:
 
-tasks_guide_.append(['accompany ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
-tasks_guide_.append(['conduct ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
-tasks_guide_.append(['escort ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
-tasks_guide_.append(['guide ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
-tasks_guide_.append(['lead ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
-tasks_guide_.append(['take ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
-tasks_guide_.append(['oversee ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
-tasks_guide_.append(['supervise ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
-tasks_guide_.append(['usher ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
+    tasks_guide_.append(['accompany ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['conduct ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['escort ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['guide ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['lead ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['take ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['oversee ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['supervise ' + pronoun + ' - guide' for pronoun in pronouns])
+    tasks_guide_.append(['usher ' + pronoun + ' - guide' for pronoun in pronouns])
 
-# resampling and appending individual structures
-len_of_str = [len(tasks_guide_[i]) for i in range(len(tasks_guide_))]
-mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
-for i in range(len(tasks_guide_)):
-    # resample if len not enough or more
-    if len_of_str[i]!=mean_of_strct_lens:
-        try: tasks_guide_[i] = resample(tasks_guide_[i], n_samples=mean_of_strct_lens, replace=False)
-        except: tasks_guide_[i] = resample(tasks_guide_[i], n_samples=mean_of_strct_lens, replace=True)
-# flat list
-tasks_guide = [item for sublist in tasks_guide_ for item in sublist]
-# rem temp params
-del tasks_guide_, len_of_str, mean_of_strct_lens
-print ("number of 'guide' sentences", len(tasks_guide))
+    tasks_guide_.append(['accompany ' + name + ' - guide' for name in names])
+    tasks_guide_.append(['conduct ' + name + ' - guide' for name in names])
+    tasks_guide_.append(['escort ' + name + ' - guide' for name in names])
+    tasks_guide_.append(['guide ' + name + ' - guide' for name in names])
+    tasks_guide_.append(['lead ' + name + ' - guide' for name in names])
+    tasks_guide_.append(['take ' + name + ' - guide' for name in names])
+    tasks_guide_.append(['oversee ' + name + ' - guide' for name in names])
+    tasks_guide_.append(['supervise ' + name + ' - guide' for name in names])
+    tasks_guide_.append(['usher ' + name + ' - guide' for name in names])
+
+    tasks_guide_.append(['accompany ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['conduct ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['escort ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['guide ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['lead ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['take ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['oversee ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['supervise ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+    tasks_guide_.append(['usher ' + pronoun + ' to the ' + location + ' - guide' for pronoun in pronouns for location in locations])
+
+    tasks_guide_.append(['accompany ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
+    tasks_guide_.append(['conduct ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
+    tasks_guide_.append(['escort ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
+    tasks_guide_.append(['guide ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
+    tasks_guide_.append(['lead ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
+    tasks_guide_.append(['take ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
+    tasks_guide_.append(['oversee ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
+    tasks_guide_.append(['supervise ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
+    tasks_guide_.append(['usher ' + name + ' to the ' + location + ' - guide' for name in names for location in locations])
+
+    # resampling and appending individual structures
+    len_of_str = [len(tasks_guide_[i]) for i in range(len(tasks_guide_))]
+    mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
+    for i in range(len(tasks_guide_)):
+        # resample if len not enough or more
+        if len_of_str[i]!=mean_of_strct_lens:
+            try: tasks_guide_[i] = resample(tasks_guide_[i], n_samples=mean_of_strct_lens, replace=False)
+            except: tasks_guide_[i] = resample(tasks_guide_[i], n_samples=mean_of_strct_lens, replace=True)
+    # flat list
+    tasks_guide = [item for sublist in tasks_guide_ for item in sublist]
+    # rem temp params
+    del tasks_guide_, len_of_str, mean_of_strct_lens
+    print ("number of 'guide' sentences", len(tasks_guide))
 
 #---------------------------------------------FOLLOW-------------------------------------
-tasks_follow_.append(['come after ' + name + ' - follow' for name in names])
-tasks_follow_.append(['go after ' + name + ' - follow' for name in names])
-tasks_follow_.append(['come behind ' + name + ' - follow' for name in names])
-tasks_follow_.append(['go behind ' + name + ' - follow' for name in names])
-tasks_follow_.append(['follow ' + name + ' - follow' for name in names])
-tasks_follow_.append(['pursue ' + name + ' - follow' for name in names])
-tasks_follow_.append(['chase ' + name + ' - follow' for name in names])
+if n_struct['follow'][1]:
 
-tasks_follow_.append(['come after '  + name + ' to the ' + location + ' - follow' for name in names for location in locations])
-tasks_follow_.append(['go after ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
-tasks_follow_.append(['come behind ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
-tasks_follow_.append(['go behind ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
-tasks_follow_.append(['follow ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
-tasks_follow_.append(['pursue ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
-tasks_follow_.append(['chase ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
+    tasks_follow_.append(['come after ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['go after ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['come behind ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['go behind ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['follow ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['pursue ' + pronoun + ' - follow' for pronoun in pronouns])
+    tasks_follow_.append(['chase ' + pronoun + ' - follow' for pronoun in pronouns])
 
-# resampling and appending individual structures
-len_of_str = [len(tasks_follow_[i]) for i in range(len(tasks_follow_))]
-mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
-for i in range(len(tasks_follow_)):
-    # resample if len not enough or more
-    if len_of_str[i]!=mean_of_strct_lens:
-        try: tasks_follow_[i] = resample(tasks_follow_[i], n_samples=mean_of_strct_lens, replace=False)
-        except: tasks_follow_[i] = resample(tasks_follow_[i], n_samples=mean_of_strct_lens, replace=True)
-# flat list
-tasks_follow = [item for sublist in tasks_follow_ for item in sublist]
-# rem temp params
-del tasks_follow_, len_of_str, mean_of_strct_lens
-print ("number of 'follow' sentences", len(tasks_follow))
+    tasks_follow_.append(['come after ' + name + ' - follow' for name in names])
+    tasks_follow_.append(['go after ' + name + ' - follow' for name in names])
+    tasks_follow_.append(['come behind ' + name + ' - follow' for name in names])
+    tasks_follow_.append(['go behind ' + name + ' - follow' for name in names])
+    tasks_follow_.append(['follow ' + name + ' - follow' for name in names])
+    tasks_follow_.append(['pursue ' + name + ' - follow' for name in names])
+    tasks_follow_.append(['chase ' + name + ' - follow' for name in names])
+
+    tasks_follow_.append(['come after '  + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['go after ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['come behind ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['go behind ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['follow ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['pursue ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+    tasks_follow_.append(['chase ' + pronoun + ' to the ' + location + ' - follow' for pronoun in pronouns for location in locations])
+
+    tasks_follow_.append(['come after '  + name + ' to the ' + location + ' - follow' for name in names for location in locations])
+    tasks_follow_.append(['go after ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
+    tasks_follow_.append(['come behind ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
+    tasks_follow_.append(['go behind ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
+    tasks_follow_.append(['follow ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
+    tasks_follow_.append(['pursue ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
+    tasks_follow_.append(['chase ' + name + ' to the ' + location + ' - follow' for name in names for location in locations])
+
+    # resampling and appending individual structures
+    len_of_str = [len(tasks_follow_[i]) for i in range(len(tasks_follow_))]
+    mean_of_strct_lens = int(np.mean(len_of_str)) + data_slider
+    for i in range(len(tasks_follow_)):
+        # resample if len not enough or more
+        if len_of_str[i]!=mean_of_strct_lens:
+            try: tasks_follow_[i] = resample(tasks_follow_[i], n_samples=mean_of_strct_lens, replace=False)
+            except: tasks_follow_[i] = resample(tasks_follow_[i], n_samples=mean_of_strct_lens, replace=True)
+    # flat list
+    tasks_follow = [item for sublist in tasks_follow_ for item in sublist]
+    # rem temp params
+    del tasks_follow_, len_of_str, mean_of_strct_lens
+    print ("number of 'follow' sentences", len(tasks_follow))
 
 print('-----------------------------------------------------')
 #----------------------------------------------------------------------------------------------
+
+
+# ################################################################################################################
+#                                                  RESAMPLING                                                    #
+# ################################################################################################################
+
 print('resampling and appending all the task sentences into one list')
 tasks = []
 if len(tasks_go)>1:
@@ -555,6 +636,12 @@ if len(tasks_guide)>1:
     del tasks_guide
 
 print('-----------------------------------------------------')
+
+
+# ################################################################################################################
+#                                           ADDING INTRO (eg: hello, robot)                                      #
+# ################################################################################################################
+
 # splitting inputs and labels and adding intros
 h = 0
 sentences = []
@@ -587,13 +674,23 @@ for v in range(len(tasks)):
     sentences.append(sentence)
     outputs.append(output)
 
-# Dumping the serialized inputs and outputs using pickle
+
+# ################################################################################################################
+#                                                  MSGPACK DUMP                                                  #
+# ################################################################################################################
+
+# Dumping the serialized inputs and outputs using msgpack
 with open('inputs', 'wb') as inputs_file:
     msgpack.dump(sentences, inputs_file)
 with open('outputs', 'wb') as outputs_file:
     msgpack.dump(outputs, outputs_file)
 
-# Take out the sentences which are longer than 15 words (The number is choosen by Pedro Martins, ref: mbot_nlu/ros/doc/pedro_thesis.pdf)
+
+# ################################################################################################################
+#                             WARN USER IF LEN(SENTNCE)>15 (why?: Check the comment below)                       #
+# ################################################################################################################
+
+# Take out the sentences which are longer than 15 words (This number was chose by Pedro Martins, ref: mbot_nlu/ros/doc/pedro_thesis.pdf)
 matches = []
 matches_lens = 0
 for sentence in sentences:
@@ -611,6 +708,12 @@ print('sentences with more than 15 words :')
 # Printing each sentence one row at a time
 for match in matches: print(match)
 print('-----------------------------------------------------')
+
+
+# ################################################################################################################
+#                                                  USER FEEDBACK                                                 #
+# ################################################################################################################
+
 print('number of sentences with more than 15 words', matches_lens)
 print('Total number of inputs', len(sentences))
 print('Total number of outputs', len(outputs))
