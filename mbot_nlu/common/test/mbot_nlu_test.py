@@ -4,7 +4,6 @@ import os
 import sys
 import time
 import yaml
-import signal
 import unittest
 import progressbar
 sys.path.append(os.path.abspath('../'))
