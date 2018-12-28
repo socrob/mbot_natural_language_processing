@@ -93,19 +93,29 @@ class MbotNluTest(unittest.TestCase):
         the test function
         Publish a sentence and compare to an expected return value from the node
         '''
-
         # read nlu input and expected output from textfiles
         sentences = self.read_sentences_from_textfile('nlu_test_inputs.txt')
         expected_output = self.read_expected_values_from_textfile('nlu_expected_output.txt')
 
         # progress bar
-        bar = progressbar.ProgressBar(max_value=len(sentences))
+        sentences_length = len(sentences)
+        bar = progressbar.ProgressBar(max_value=sentences_length)
 
         # open raw result dump file
         raw_result_dump = open('raw_nlu_output.txt', 'w')
 
         # iterate over test sentences (list)
-        test_total_number = 0
+        # count wrong tests if either the intent or one of the slots are wrong
+        wrong_tests = 0
+        correct_untill_now = True
+        def count_wrong_test(sentence_test_status, wrong_tests):
+            if not sentence_test_status:
+                print(sentence, self.result)
+                wrong_tests += 1
+                return False, wrong_tests
+            else:
+                return True, wrong_tests
+
         for i, sentence in enumerate(sentences):
 
             # Check if NLU has an output if not continue to the next sentence
@@ -120,6 +130,7 @@ class MbotNluTest(unittest.TestCase):
             if self.result is None or result_length==0:
                 print('nlu is not able to classify the sentence = {}'.format(sentence))
                 print('skipping to next sentence')
+                correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
                 continue
 
             # wait until result is received.
@@ -131,6 +142,7 @@ class MbotNluTest(unittest.TestCase):
                 print('nlu is able to classify only intent or only one slot for the sentence = {}'.format(sentence))
                 print('result = {}'.format(self.result))
                 print('skipping to next sentence')
+                correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
                 continue
 
             # Assigning expected intent and slots
@@ -140,33 +152,44 @@ class MbotNluTest(unittest.TestCase):
             # Testing intent
             if self.test_choice=='intent' or self.test_choice=='both':
                 with self.subTest(Sentence_and_Intent = sentence[0].rstrip() + '--' + str(exp_intent)):
-                    # counting test number
-                    test_total_number += 1
-
                     # conditions for the test to be considered as passed
                     # If there is no intent, there is IndexError
                     self.assertEqual(self.result[0][0], exp_intent)
 
+                    # count failures
+                    if self.result[0][0]!=exp_intent:
+                        print('WRONG INTENT',self.result[0][0], exp_intent)
+                        sentence_test_status = False
+                        correct_untill_now, wrong_tests = count_wrong_test(sentence_test_status, wrong_tests)
+
             # Testing slots
             if self.test_choice=='slot'or self.test_choice=='both':
                 for slot_num, slot in enumerate(exp_slots):
-                    # counting test number
-                    test_total_number += 1
-
                     # conditions for the test to be considered as passed for each slot
                     # If there is absence of specific slot, there is an IndexError
                     with self.subTest(Sentence_and_Slot = sentence[0].rstrip() + '--' + str(slot)):
                         self.assertEqual(self.result[0][1][slot_num], slot)
 
+                    # count failures
+                    if self.result[0][1][slot_num]!=slot and correct_untill_now:
+                        print('WRONG SLOT', self.result[0][1][slot_num], slot)
+                        sentence_test_status = False
+                        correct_untill_now, wrong_tests = count_wrong_test(sentence_test_status, wrong_tests)
+
             bar.update(i)
 
         bar.finish()
+
+        # Accuracy
+        Accuracy = (1-(wrong_tests/sentences_length))*100
 
         # print additional information
         print('\033[1;32m==========================\033[0;37m')
         print('\033[1;32mTEST COMPLETE\033[0;37m')
         print('\033[1;32m--------------------------\033[0;37m')
-        print('\033[1;32mTotal numer of tests run is = {} \nsee the log_file.txt for detailed report\033[0;37m'.format(test_total_number))
+        print('\033[1;32mTotal number of tests run is = {} \nsee the log_file.txt for detailed report\033[0;37m'.format(sentences_length))
+        print('\033[1;32m--------------------------\033[0;37m')
+        print('\033[1;32mAccuracy = {} \n\033[0;37m'.format(Accuracy))
         print('\033[1;32m--------------------------\033[0;37m')
 
 
