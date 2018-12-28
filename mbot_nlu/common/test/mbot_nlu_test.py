@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import yaml
+import signal
 import unittest
 import progressbar
 sys.path.append(os.path.abspath('../'))
@@ -98,19 +99,28 @@ class MbotNluTest(unittest.TestCase):
         sentences = self.read_sentences_from_textfile('nlu_test_inputs.txt')
         expected_output = self.read_expected_values_from_textfile('nlu_expected_output.txt')
 
-        #progressbar
+        # progress bar
         bar = progressbar.ProgressBar(max_value=len(sentences))
 
+        # open raw result dump file
+        raw_result_dump = open('raw_nlu_output.txt', 'w')
+
+        # iterate over test sentences (list)
         test_total_number = 0
         for i, sentence in enumerate(sentences):
-            # print(i)
-            # Check if NLU has an output in not continue to the next sentence
+
+            # Check if NLU has an output if not continue to the next sentence
             self.result = None
-            try:
-                self.result = self.nlu.process_sentence(sentence)
-                # print(self.result)
-            except:
-                print('result not found for sentece = {}'.format(sentence))
+            self.result = self.nlu.process_sentence(sentence)
+
+            # export raw result to text file (for manual inspection)
+            raw_result_dump.write(str(sentence) + '===' + str(self.result) + '\n')
+
+            # continue to next sentences if result is None or empty list
+            result_length = len(self.result)
+            if self.result is None or result_length==0:
+                print('nlu is not able to classify the sentence = {}'.format(sentence))
+                print('skipping to next sentence')
                 continue
 
             # wait until result is received.
@@ -118,16 +128,15 @@ class MbotNluTest(unittest.TestCase):
                 time.sleep(0.01)
 
             # Check if the output list has atleast one item
-            if len(self.result)>=1:
-                pass
-            else:
-                print('result has no intent or slots for the sentence = {}'.format(sentence))
+            if result_length<1:
+                print('nlu is able to classify only intent or only one slot for the sentence = {}'.format(sentence))
+                print('result = {}'.format(self.result))
+                print('skipping to next sentence')
                 continue
 
             # Assigning expected intent and slots
             exp_intent = expected_output[i][0][0]
             exp_slots = expected_output[i][1]
-            # print(exp_slots)
 
             # Testing intent
             if self.test_choice=='intent' or self.test_choice=='both':
@@ -141,16 +150,16 @@ class MbotNluTest(unittest.TestCase):
 
             # Testing slots
             if self.test_choice=='slot'or self.test_choice=='both':
-                for i, slot in enumerate(exp_slots):
+                for slot_num, slot in enumerate(exp_slots):
                     # counting test number
                     test_total_number += 1
 
                     # conditions for the test to be considered as passed for each slot
-                    # If there is absense specific slot, there is an IndexError
+                    # If there is absence of specific slot, there is an IndexError
                     with self.subTest(Sentence_and_Slot = sentence[0].rstrip() + '--' + str(slot)):
-                        self.assertEqual(self.result[0][1][i], slot)
+                        self.assertEqual(self.result[0][1][slot_num], slot)
 
-            bar.update(int(i))
+            bar.update(i)
 
         bar.finish()
 
