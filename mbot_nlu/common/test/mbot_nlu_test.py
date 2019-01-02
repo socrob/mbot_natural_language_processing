@@ -110,7 +110,6 @@ class MbotNluTest(unittest.TestCase):
         correct_untill_now = True
         def count_wrong_test(sentence_test_status, wrong_tests):
             if not sentence_test_status:
-                print(sentence, self.result)
                 wrong_tests += 1
                 return False, wrong_tests
             else:
@@ -157,10 +156,11 @@ class MbotNluTest(unittest.TestCase):
                     self.assertEqual(self.result[0][0], exp_intent)
 
                     # count failures
-                    if self.result[0][0]!=exp_intent:
-                        print('WRONG INTENT',self.result[0][0], exp_intent)
-                        sentence_test_status = False
-                        correct_untill_now, wrong_tests = count_wrong_test(sentence_test_status, wrong_tests)
+                    try:
+                        if self.result[0][0]!=exp_intent:
+                            correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
+                    except IndexError:
+                        correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
 
             # Testing slots
             if self.test_choice=='slot'or self.test_choice=='both':
@@ -171,10 +171,11 @@ class MbotNluTest(unittest.TestCase):
                         self.assertEqual(self.result[0][1][slot_num], slot)
 
                     # count failures
-                    if self.result[0][1][slot_num]!=slot and correct_untill_now:
-                        print('WRONG SLOT', self.result[0][1][slot_num], slot)
-                        sentence_test_status = False
-                        correct_untill_now, wrong_tests = count_wrong_test(sentence_test_status, wrong_tests)
+                    try:
+                        if self.result[0][1][slot_num]!=slot and correct_untill_now:
+                            correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
+                    except IndexError:
+                        correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
 
             bar.update(i)
 
@@ -187,7 +188,7 @@ class MbotNluTest(unittest.TestCase):
         print('\033[1;32m==========================\033[0;37m')
         print('\033[1;32mTEST COMPLETE\033[0;37m')
         print('\033[1;32m--------------------------\033[0;37m')
-        print('\033[1;32mTotal number of tests run is = {} \nsee the log_file.txt for detailed report\033[0;37m'.format(sentences_length))
+        print('\033[1;32mTotal number of tests and failures = {}, {} \nsee the log_file.txt for detailed report\033[0;37m'.format(sentences_length, wrong_tests))
         print('\033[1;32m--------------------------\033[0;37m')
         print('\033[1;32mAccuracy = {} \n\033[0;37m'.format(Accuracy))
         print('\033[1;32m--------------------------\033[0;37m')
