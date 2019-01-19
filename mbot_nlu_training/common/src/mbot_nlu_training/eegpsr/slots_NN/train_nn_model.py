@@ -10,6 +10,7 @@ import numpy as np
 import progressbar
 import tensorflow as tf
 from termcolor import colored
+from sklearn.utils import resample
 from tensorflow.contrib import rnn
 start_time = time.time()
 
@@ -195,7 +196,7 @@ class slot_training_class():
         split_list_outputs = []
         split_list_lengths = []
         # resamplining data
-        data_inputs, data_outputs, lengths = resample(data_inputs, data_outputs, lengths, replace=self.data_du)
+        data_inputs, data_outputs, lengths = resample(data_inputs, data_outputs, lengths, replace=self.resample_replace)
         # splitting to batches
         len_each_chunks = int(len(data_inputs)/self.number_of_batches)
         for i in range(self.number_of_batches):
