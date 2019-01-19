@@ -93,24 +93,43 @@ class MbotNluTest(unittest.TestCase):
         the test function
         Publish a sentence and compare to an expected return value from the node
         '''
-
         # read nlu input and expected output from textfiles
         sentences = self.read_sentences_from_textfile('nlu_test_inputs.txt')
         expected_output = self.read_expected_values_from_textfile('nlu_expected_output.txt')
 
-        #progressbar
-        bar = progressbar.ProgressBar(max_value=len(sentences))
+        # progress bar
+        sentences_length = len(sentences)
+        bar = progressbar.ProgressBar(max_value=sentences_length)
 
-        test_total_number = 0
+        # open raw result dump file
+        raw_result_dump = open('raw_nlu_output.txt', 'w')
+
+        # iterate over test sentences (list)
+        # count wrong tests if either the intent or one of the slots are wrong
+        wrong_tests = 0
+        correct_untill_now = True
+        def count_wrong_test(sentence_test_status, wrong_tests):
+            if not sentence_test_status:
+                wrong_tests += 1
+                return False, wrong_tests
+            else:
+                return True, wrong_tests
+
         for i, sentence in enumerate(sentences):
-            # print(i)
-            # Check if NLU has an output in not continue to the next sentence
+
+            # Check if NLU has an output if not continue to the next sentence
             self.result = None
-            try:
-                self.result = self.nlu.process_sentence(sentence)
-                # print(self.result)
-            except:
-                print('result not found for sentece = {}'.format(sentence))
+            self.result = self.nlu.process_sentence(sentence)
+
+            # export raw result to text file (for manual inspection)
+            raw_result_dump.write(str(sentence) + '===' + str(self.result) + '\n')
+
+            # continue to next sentences if result is None or empty list
+            result_length = len(self.result)
+            if self.result is None or result_length==0:
+                print('nlu is not able to classify the sentence = {}'.format(sentence))
+                print('skipping to next sentence')
+                correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
                 continue
 
             # wait until result is received.
@@ -118,47 +137,60 @@ class MbotNluTest(unittest.TestCase):
                 time.sleep(0.01)
 
             # Check if the output list has atleast one item
-            if len(self.result)>=1:
-                pass
-            else:
-                print('result has no intent or slots for the sentence = {}'.format(sentence))
+            if result_length<1:
+                print('nlu is able to classify only intent or only one slot for the sentence = {}'.format(sentence))
+                print('result = {}'.format(self.result))
+                print('skipping to next sentence')
+                correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
                 continue
 
             # Assigning expected intent and slots
             exp_intent = expected_output[i][0][0]
             exp_slots = expected_output[i][1]
-            # print(exp_slots)
 
             # Testing intent
             if self.test_choice=='intent' or self.test_choice=='both':
                 with self.subTest(Sentence_and_Intent = sentence[0].rstrip() + '--' + str(exp_intent)):
-                    # counting test number
-                    test_total_number += 1
-
                     # conditions for the test to be considered as passed
                     # If there is no intent, there is IndexError
                     self.assertEqual(self.result[0][0], exp_intent)
 
+                    # count failures
+                    try:
+                        if self.result[0][0]!=exp_intent:
+                            correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
+                    except IndexError:
+                        correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
+
             # Testing slots
             if self.test_choice=='slot'or self.test_choice=='both':
-                for i, slot in enumerate(exp_slots):
-                    # counting test number
-                    test_total_number += 1
-
+                for slot_num, slot in enumerate(exp_slots):
                     # conditions for the test to be considered as passed for each slot
-                    # If there is absense specific slot, there is an IndexError
+                    # If there is absence of specific slot, there is an IndexError
                     with self.subTest(Sentence_and_Slot = sentence[0].rstrip() + '--' + str(slot)):
-                        self.assertEqual(self.result[0][1][i], slot)
+                        self.assertEqual(self.result[0][1][slot_num], slot)
 
-            bar.update(int(i))
+                    # count failures
+                    try:
+                        if self.result[0][1][slot_num]!=slot and correct_untill_now:
+                            correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
+                    except IndexError:
+                        correct_untill_now, wrong_tests = count_wrong_test(False, wrong_tests)
+
+            bar.update(i)
 
         bar.finish()
+
+        # Accuracy
+        Accuracy = (1-(wrong_tests/sentences_length))*100
 
         # print additional information
         print('\033[1;32m==========================\033[0;37m')
         print('\033[1;32mTEST COMPLETE\033[0;37m')
         print('\033[1;32m--------------------------\033[0;37m')
-        print('\033[1;32mTotal numer of tests run is = {} \nsee the log_file.txt for detailed report\033[0;37m'.format(test_total_number))
+        print('\033[1;32mTotal number of tests and failures = {}, {} \nsee the log_file.txt for detailed report\033[0;37m'.format(sentences_length, wrong_tests))
+        print('\033[1;32m--------------------------\033[0;37m')
+        print('\033[1;32mAccuracy = {} \n\033[0;37m'.format(Accuracy))
         print('\033[1;32m--------------------------\033[0;37m')
 
 
