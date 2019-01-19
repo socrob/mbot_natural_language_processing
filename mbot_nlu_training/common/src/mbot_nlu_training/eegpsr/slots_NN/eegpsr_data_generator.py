@@ -6,11 +6,6 @@ import msgpack
 import numpy as np
 from sklearn.utils import resample
 
-
-# ################################################################################################################
-#                                                  PARAMETERS                                                    #
-# ################################################################################################################
-
 # load parameters from yaml
 # ================================================================================================================
 yaml_dict = yaml.load(open('../../../../../ros/config/config_mbot_nlu_training.yaml'))['slots_train']
@@ -19,19 +14,13 @@ random_state = eval(yaml_dict['resample_random_state'])
 # params for balancing individual structures
 # ================================================================================================================
 # number of types of different structured sentences in each of intent classes
-# True/False dictates if the sentences in this intent class will be included in the training data
-n_struct = {'go': (45, False), 'take': (52, True), 'find': (44, True), 'answer': (2, False), 'tell': (11, False), 'guide': (18, True), 'follow': (14, True), 'meet': (0, False)}
+n_struct = {'go': (45, True), 'take': (52, True), 'find': (44, True), 'answer': (2, True), 'tell': (11, True), 'guide': (18, True), 'follow': (14, True), 'meet': (0, False)}
 
 # number of samples per structe required enough to make balances data
 n_samples_per_intent = int(yaml_dict['n_examples']/len([item for item in n_struct.keys() if n_struct[item][0]!=0 and n_struct[item][1]]))
 # data slider. bigger the value, bigger the number of sentences with complex structures(eg: grasp to mia at the kitchen the bottle from the bed room)
 # but bigger the repeatation of sentences with smaller structure(eg: go to the kitchen)
 data_slider = yaml_dict['data_slider']
-
-
-# ################################################################################################################
-#                                           NOUNS (for sentence generation)                                      #
-# ################################################################################################################
 
 # data for creating sentences eg: [names, objects]
 # ================================================================================================================
@@ -113,14 +102,20 @@ locations_on = ['nightstand -Blocation-', 'bookshelf -Blocation-', 'coffee -Bloc
                 'living -Blocation- room -Ilocation- table -Ilocation-', 'center -Blocation- table -Ilocation-', 'drawer -Blocation-', 'desk -Blocation-',
                 'cupboard -Blocation-', 'side -Blocation- shelf -Ilocation-', 'bookcase -Blocation-', 'dining -Blocation- table -Ilocation-',
                 'fridge -Blocation-', 'counter -Blocation-', 'cabinet -Blocation-', 'table -Blocation-', 'bedchamber -Blocation-', 'chair -Blocation-',
+                'fridge -Blocation- 2 -Ilocation-', 'counter -Blocation- 4 -Ilocation-', 'cabinet -Blocation- 2 -Ilocation-',
+                'table -Blocation- 1 -Ilocation-', 'bedchamber -Blocation- 3 -Ilocation-', 'chair -Blocation- 8 -Ilocation-',
                 'dryer -Blocation-', 'oven -Blocation-', 'rocking -Blocation- chair -Ilocation-', 'stove -Blocation-', 'television -Blocation-',
                 'dressing -Blocation- table -Ilocation-', 'bench -Blocation-', 'futon -Blocation-', 'beanbag -Blocation-', 'stool -Blocation-',
+                'dressing -Blocation- table -Ilocation- 1 -Ilocation-', 'bench -Blocation- 1 -Ilocation-', 'futon -Blocation- 1 -Ilocation-',
+                'beanbag -Blocation- 1 -Ilocation-', 'stool -Blocation- 1 -Ilocation-',
                 'sideboard -Blocation-', 'washing -Blocation- machine -Ilocation-', 'dishwasher -Blocation-']
 
 locations_in = ['wardrobe -Blocation-', 'nightstand -Blocation-', 'bookshelf -Blocation-', 'dining -Blocation- room -Ilocation-', 'bedroom -Blocation-',
                 'closet -Blocation-', 'living -Blocation- room -Ilocation-', 'bar -Blocation-', 'office -Blocation-', 'drawer -Blocation-',
                 'kitchen -Blocation-', 'cupboard -Blocation-', 'side -Blocation- shelf -Ilocation-', 'fridge -Blocation-', 'corridor -Blocation-',
                 'cabinet -Blocation-', 'bathroom -Blocation-', 'toilet -Blocation-', 'hall -Blocation-', 'hallway -Blocation-',
+                'cabinet -Blocation- 1 -Ilocation-', 'bathroom -Blocation- 5 -Ilocation-', 'toilet -Blocation- 6 -Ilocation-', 'hall -Blocation- 4 -Ilocation-', 'hallway -Blocation- 2 -Ilocation-',
+                'master -Blocation- bedroom -Ilocation- 3 -Ilocation-', 'dormitory -Blocation- room -Ilocation- 2 -Ilocation-', 'bedchamber -Blocation- 7 -Ilocation-', 'cellar -Blocation- 0 -Ilocation-',
                 'master -Blocation- bedroom -Ilocation-', 'dormitory -Blocation- room -Ilocation-', 'bedchamber -Blocation-', 'cellar -Blocation-',
                 'den -Blocation-', 'garage -Blocation-', 'playroom -Blocation-', 'porch -Blocation-', 'staircase -Blocation-',
                 'sun -Blocation- room -Ilocation-', 'music -Blocation- room -Ilocation-', 'prayer -Blocation- room -Ilocation-',
@@ -136,7 +131,8 @@ locations_at = ['wardrobe -Blocation-', 'nightstand -Blocation-', 'bookshelf -Bl
                 'living -Blocation- room -Ilocation- table -Ilocation-', 'center -Blocation- table -Ilocation-', 'bar -Blocation-',
                 'drawer -Blocation-', 'desk -Blocation-', 'cupboard -Blocation-', 'sink -Blocation-', 'side -Blocation- shelf -Ilocation-',
                 'bookcase -Blocation-', 'dining -Blocation- table -Ilocation-', 'fridge -Blocation-', 'counter -Blocation-', 'door -Blocation-',
-                'cabinet -Blocation-', 'table -Blocation-', 'master -Blocation- bedroom -Ilocation-', 'dormitory -Blocation- room -Ilocation-',
+                'bookcase -Blocation- 0 -Ilocation-', 'dining -Blocation- table -Ilocation- 2 -Ilocation-', 'fridge -Blocation- 1 -Ilocation-',
+                'counter -Blocation- 6 -Ilocation-', 'door -Blocation- 4 -Ilocation-', 'cabinet -Blocation-', 'table -Blocation-', 'master -Blocation- bedroom -Ilocation-', 'dormitory -Blocation- room -Ilocation-',
                 'bedchamber -Blocation-', 'chair -Blocation-', 'dryer -Blocation-', 'entrance -Blocation-', 'garden -Blocation-',
                 'oven -Blocation-', 'rocking -Blocation- chair -Ilocation-', 'room -Blocation-', 'stove -Blocation-', 'television -Blocation-',
                 'washer -Blocation-', 'cellar -Blocation-', 'den -Blocation-', 'laundry -Blocation-', 'pantry -Blocation-', 'patio -Blocation-',
@@ -199,15 +195,18 @@ what_to_tell_to = [ "your -Bwhat_to_tell- teams -Iwhat_to_tell- affiliation -Iwh
 # ================================================================================================================
 # introductions
 # ================================================================================================================
-intros = ['robot', 'hello robot', 'hello', 'please', 'could you please', 'robot please', 'can you', 'robot can you', 'robot could you', 'could you']
+intros = ['robot', 'please', 'could you please', 'robot please', 'robot could you please', 'can you', 'robot can you',  'could you', 'robot could you', 'hi', 'hello robot', 'can you please', 'will you', 'will you please', 'kindly']
 
-
-# ################################################################################################################
-#                                                  USER FEEDBACK                                                 #
-# ################################################################################################################
-
-# printing number of objects used in the generator
-print('objects', len(objects))
+# Prining number of objects used in the generator
+# print('obect_a', len(objects_a))
+# print('obect_an', len(objects_an))
+# print('objects_the', len(objects_the))
+# print('objects_some', len(objects_some))
+# print('objects_a_piece_of', len(objects_a_piece_of))
+# print('objects_a_cup_of', len(objects_a_cup_of))
+# print('objects_a_can_of', len(objects_a_can_of))
+# print('objects_a_glass_of', len(objects_a_glass_of))
+# print('objects_a_bottle_of', len(objects_a_bottle_of))
 print('locations', len(sorted(locations, key=str.lower)))
 print('names', len(names))
 print('what_to_tell_to', len(what_to_tell_to))
@@ -222,11 +221,6 @@ tasks_guide = []; tasks_guide_ = []
 tasks_tell = []; tasks_tell_ = []
 tasks_go = []; tasks_go_ = []
 tasks_meet = []; tasks_meet_ = []
-
-
-# ################################################################################################################
-#                                         SENTENCE STRUCTURE DEFINISTIONS                                        #
-# ################################################################################################################
 
 #------------------------------------------GO----------------------------------------------
 if n_struct['go'][1]:
@@ -300,8 +294,8 @@ if n_struct['take'][1]:
     tasks_take_.append(['grasp the ' + objet for objet in objects])
     tasks_take_.append(['pick up the ' + objet for objet in objects])
 
-    tasks_take_.append(['bring me -Bperson- the ' + objet for objet in objects])
-    tasks_take_.append(['give me -Bperson- the ' + objet for objet in objects])
+    tasks_take_.append(['bring me the ' + objet for objet in objects])
+    tasks_take_.append(['give me the ' + objet for objet in objects])
 
     tasks_take_.append(['take the ' + objet + ' to the ' + location.replace('location', 'destination') for objet in objects for location in locations])
     tasks_take_.append(['put the ' + objet + ' to the ' + location.replace('location', 'destination') for objet in objects for location in locations])
@@ -317,16 +311,16 @@ if n_struct['take'][1]:
 
     tasks_take_.append(['bring the ' + objet + ' to ' + name for objet in objects_the for name in names])
 
-    tasks_take_.append(['bring me -Bperson- the ' + objet + ' from the ' + location.replace('location', 'source') for objet in objects_the for location in locations])
-    tasks_take_.append(['give me -Bperson- the ' + objet + ' from the ' + location.replace('location', 'source') for objet in objects_the for location in locations])
+    tasks_take_.append(['bring me the ' + objet + ' from the ' + location.replace('location', 'source') for objet in objects_the for location in locations])
+    tasks_take_.append(['give me the ' + objet + ' from the ' + location.replace('location', 'source') for objet in objects_the for location in locations])
 
     tasks_take_.append(['bring the ' + objet + ' to ' + name + ' at the ' + location.replace('location', 'destination') for objet in objects_the for name in names for location in locations])
 
-    tasks_take_.append(['bring the ' + objet + ' to me -Bperson-' for objet in objects_the])
-    tasks_take_.append(['deliver the ' + objet + ' to me -Bperson-' for objet in objects_the])
-    tasks_take_.append(['give the ' + objet + ' to me -Bperson-' for objet in objects_the])
-    tasks_take_.append(['hand the ' + objet + ' to me -Bperson-' for objet in objects_the])
-    tasks_take_.append(['hand over the ' + objet + ' to me -Bperson-' for objet in objects_the])
+    tasks_take_.append(['bring the ' + objet + ' to me' for objet in objects_the])
+    tasks_take_.append(['deliver the ' + objet + ' to me' for objet in objects_the])
+    tasks_take_.append(['give the ' + objet + ' to me' for objet in objects_the])
+    tasks_take_.append(['hand the ' + objet + ' to me' for objet in objects_the])
+    tasks_take_.append(['hand over the ' + objet + ' to me' for objet in objects_the])
 
     tasks_take_.append(['deliver the ' + objet + ' to ' + name for objet in objects_the for name in names])
     tasks_take_.append(['deliver the ' + objet + ' to ' + name + ' at the ' + location.replace('location', 'destination') for objet in objects_the for name in names for location in locations_at])
@@ -380,19 +374,21 @@ if n_struct['take'][1]:
 #-----------------------------------------------FIND-----------------------------------------------
 if n_struct['find'][1]:
 
-    tasks_find_.append(['find the ' + objet for objet in objects])
-    tasks_find_.append(['look for the ' + objet for objet in objects])
-    tasks_find_.append(['locate the ' + objet for objet in objects])
-    tasks_find_.append(['pinpoint the ' + objet for objet in objects])
-    tasks_find_.append(['spot the ' + objet for objet in objects])
-    tasks_find_.append(['search for the ' + objet for objet in objects])
+    temp_vars = ['a', 'an', 'the', 'my']
 
-    tasks_find_.append(['find the ' + objet + ' in the ' + location.replace('location', 'destination') for objet in objects for location in locations_in])
-    tasks_find_.append(['look for the ' + objet + ' in the ' + location.replace('location', 'destination') for objet in objects for location in locations_in])
-    tasks_find_.append(['locate the ' + objet + ' in the ' + location.replace('location', 'destination') for objet in objects for location in locations_in])
-    tasks_find_.append(['pinpoint the ' + objet + ' in the ' + location.replace('location', 'destination') for objet in objects for location in locations_in])
-    tasks_find_.append(['spot the ' + objet + ' in the ' + location.replace('location', 'destination') for objet in objects for location in locations_in])
-    tasks_find_.append(['search for the ' + objet + ' in the ' + location for objet in objects for location in locations_in])
+    tasks_find_.append(['find ' + tem_var + ' ' + objet for tem_var in temp_vars for objet in objects])
+    tasks_find_.append(['look for ' + tem_var + ' ' + objet for tem_var in temp_vars for objet in objects])
+    tasks_find_.append(['locate ' + tem_var + ' ' + objet for tem_var in temp_vars for objet in objects])
+    tasks_find_.append(['pinpoint ' + tem_var + ' ' + objet for tem_var in temp_vars for objet in objects])
+    tasks_find_.append(['spot ' + tem_var + ' ' + objet for tem_var in temp_vars for objet in objects])
+    tasks_find_.append(['search for ' + tem_var + ' ' + objet for tem_var in temp_vars for objet in objects])
+
+    tasks_find_.append(['find ' + tem_var + ' ' + objet + ' in the ' + location.replace('location', 'destination') for tem_var in temp_vars for objet in objects for location in locations_in])
+    tasks_find_.append(['look for ' + tem_var + ' ' + objet + ' in the ' + location.replace('location', 'destination') for tem_var in temp_vars for objet in objects for location in locations_in])
+    tasks_find_.append(['locate ' + tem_var + ' ' + objet + ' in the ' + location.replace('location', 'destination') for tem_var in temp_vars for objet in objects for location in locations_in])
+    tasks_find_.append(['pinpoint ' + tem_var + ' ' + objet + ' in the ' + location.replace('location', 'destination') for tem_var in temp_vars for objet in objects for location in locations_in])
+    tasks_find_.append(['spot ' + tem_var + ' ' + objet + ' in the ' + location.replace('location', 'destination') for tem_var in temp_vars for objet in objects for location in locations_in])
+    tasks_find_.append(['search for ' + tem_var + ' ' + objet + ' in the ' + location.replace('location', 'destination') for tem_var in temp_vars for objet in objects for location in locations_in])
 
     tasks_find_.append(['find ' + name for name in names])
     tasks_find_.append(['look for ' + name for name in names])
@@ -406,14 +402,14 @@ if n_struct['find'][1]:
     tasks_find_.append(['locate ' + name + ' in the ' + location.replace('location', 'destination') for name in names for location in locations_in])
     tasks_find_.append(['pinpoint ' + name + ' in the ' + location.replace('location', 'destination') for name in names for location in locations_in])
     tasks_find_.append(['spot ' + name + ' in the ' + location.replace('location', 'destination') for name in names for location in locations_in])
-    tasks_find_.append(['search for ' + name + ' in the ' + location for name in names for location in locations_in])
+    tasks_find_.append(['search for ' + name + ' in the ' + location.replace('location', 'destination') for name in names for location in locations_in])
 
     tasks_find_.append(['find ' + name + ' at the ' + location.replace('location', 'destination') for name in names for location in locations_at])
     tasks_find_.append(['look for ' + name + ' at the ' + location.replace('location', 'destination') for name in names for location in locations_at])
     tasks_find_.append(['locate ' + name + ' at the ' + location.replace('location', 'destination') for name in names for location in locations_at])
     tasks_find_.append(['pinpoint ' + name + ' at the ' + location.replace('location', 'destination') for name in names for location in locations_at])
     tasks_find_.append(['spot ' + name + ' at the ' + location.replace('location', 'destination') for name in names for location in locations_at])
-    tasks_find_.append(['search for ' + name + ' at the ' + location for name in names for location in locations_at])
+    tasks_find_.append(['search for ' + name + ' at the ' + location.replace('location', 'destination') for name in names for location in locations_at])
     # ADDED SENTENCES FROM GPSR COMMAND GEN FOR ROBOCUP 2018
     # ===========================================================================================
     tasks_find_.append(['find someone -Bperson-'])
@@ -422,7 +418,7 @@ if n_struct['find'][1]:
     tasks_find_.append(['find a person -Bperson-'])
     tasks_find_.append(['locate a person -Bperson-'])
     tasks_find_.append(['look for a person -Bperson-'])
-    tasks_find_.append(['search for a person - find'])
+    tasks_find_.append(['search for a person -Bperson-'])
 
     tasks_find_.append(['find a person -Bperson-' + ' in the ' + location.replace('location', 'destination') for location in locations_in])
     tasks_find_.append(['locate a person -Bperson-' + ' in the ' + location.replace('location', 'destination') for location in locations_in])
@@ -430,7 +426,7 @@ if n_struct['find'][1]:
     tasks_find_.append(['find someone -Bperson-' + ' in the ' + location.replace('location', 'destination') for location in locations_in])
     tasks_find_.append(['look for someone -Bperson-' + ' in the ' + location.replace('location', 'destination') for location in locations_in])
     tasks_find_.append(['locate someone -Bperson-' + ' in the ' + location.replace('location', 'destination') for location in locations_in])
-    tasks_find_.append(['search for someone' + ' in the ' + location for location in locations_in])
+    tasks_find_.append(['search for someone -Bperson-' + ' in the ' + location.replace('location', 'destination') for location in locations_in])
 
 
     # resampling and appending individual structures
@@ -479,11 +475,11 @@ if n_struct['tell'][1]:
     # ===========================================================================================
     tasks_tell_.append(['say ' + w for w in what_to_tell_to])
     tasks_tell_.append(['tell ' + w for w in what_to_tell_to])
-    tasks_tell_.append(['tell me -Bperson- ' + w for w in what_to_tell_to])
+    tasks_tell_.append(['tell me ' + w for w in what_to_tell_to])
 
-    tasks_tell_.append(['tell me -Bperson- the name -Bwhat_to_tell- of -Iwhat_to_tell- the -Iwhat_to_tell- person -Iwhat_to_tell- at the ' + location.replace('location', 'destination') for location in locations_at])
-    tasks_tell_.append(['tell me -Bperson- the name -Bwhat_to_tell- of -Iwhat_to_tell- the -Iwhat_to_tell- person -Iwhat_to_tell- in the ' + location.replace('location', 'destination') for location in locations_in])
-    tasks_tell_.append(['tell me -Bperson- how -Bwhat_to_tell- many -Iwhat_to_tell- ' + objet + ' there are on the ' + location.replace('location', 'destination') for objet in objects for location in locations_on])
+    tasks_tell_.append(['tell me the name -Bwhat_to_tell- of -Iwhat_to_tell- the -Iwhat_to_tell- person -Iwhat_to_tell- at the ' + location.replace('location', 'destination') for location in locations_at])
+    tasks_tell_.append(['tell me the name -Bwhat_to_tell- of -Iwhat_to_tell- the -Iwhat_to_tell- person -Iwhat_to_tell- in the ' + location.replace('location', 'destination') for location in locations_in])
+    tasks_tell_.append(['tell me how -Bwhat_to_tell- many -Iwhat_to_tell- ' + objet + ' there are on the ' + location.replace('location', 'destination') for objet in objects for location in locations_on])
     # added extra for test
     tasks_tell_.append(['tell to '+ name + ' how -Bwhat_to_tell- many -Iwhat_to_tell- ' + objet + ' there are on the ' + location.replace('location', 'destination') for name in names for objet in objects for location in locations_on])
     # resampling and appending individual structures
@@ -572,12 +568,6 @@ if n_struct['follow'][1]:
 
 print('-----------------------------------------------------')
 #----------------------------------------------------------------------------------------------
-
-
-# ################################################################################################################
-#                                                  RESAMPLING                                                    #
-# ################################################################################################################
-
 print('resampling and appending all the task sentences into one list')
 tasks = []
 if len(tasks_go)>1:
@@ -647,11 +637,6 @@ if len(tasks_guide)>1:
 
 print('-----------------------------------------------------')
 
-
-# ################################################################################################################
-#                                           ADDING INTRO (eg: hello, robot)                                      #
-# ################################################################################################################
-
 # Appending introductions (eg: "hello robot" , "could you please" etc.) and generating inputs and outputs
 c = 0
 sentences = []
@@ -701,11 +686,6 @@ for v in range(len(tasks)):
     sentences.append(sentence)
     outputs.append(output)
 
-
-# ################################################################################################################
-#                                                  MSGPACK DUMP                                                  #
-# ################################################################################################################
-
 # pickling inputs and labels
 with open('inputs_slot_filling', 'wb') as inputs_file:
     msgpack.dump(sentences, inputs_file)
@@ -713,12 +693,9 @@ with open('inputs_slot_filling', 'wb') as inputs_file:
 with open('outputs_slot_filling', 'wb') as outputs_file:
     msgpack.dump(outputs, outputs_file)
 
-
-# ################################################################################################################
-#                                                  USER FEEDBACK                                                 #
-# ################################################################################################################
-
 print('Total number of inputs', len(sentences))
 print('Total number of outputs', len(outputs))
+
 print('-----------------------------------------------------')
+
 print('Data generation is complete for Slots training, you may start the training by running training_nn_model.py script')
