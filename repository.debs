@@ -19,7 +19,7 @@ bash ${DIR}/mbot_nlu/common/setup/nlu_setup.sh
 echo -e "${YELLOW}\nStarting nlu training setup...\n${NC}"
 bash ${DIR}/mbot_nlu_training/common/setup/nlu_training_setup.sh
 echo -e "${YELLOW}\nStarting nlu classifier setup...\n${NC}"
-echo -e "${YELLOW}Downloading mithun_gpsr_robocup classifier...${NC}" && sleep 2 && bash ${DIR}/mbot_nlu_classifiers/common/setup/download_classifiers.sh 3
+echo -e "${YELLOW}Downloading mithun_gpsr_robocup classifier...${NC}" && sleep 2 && bash ${DIR}/mbot_nlu_classifiers/common/setup/download_classifiers.sh 6
 
 ### install further repositories if repository.rosinstall file exists
 if [ -f repository.rosinstall ]; then
