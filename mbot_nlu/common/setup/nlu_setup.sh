@@ -12,13 +12,13 @@ pip_packagelist=(
     asciitree
     tensorflow==1.4.0
     numpy
-    msgpack
+    msgpack<0.6
     msgpack_numpy
 )
 
 pip3_packagelist=(
     numpy
-    msgpack
+    msgpack<0.6
     msgpack_numpy
 )
 
